@@ -1,6 +1,7 @@
 export type NavIcon =
   | "dashboard"
   | "products"
+  | "categories"
   | "orders"
   | "inventory"
   | "customers"
@@ -64,6 +65,7 @@ export const accountNav: NavItem[] = [
 export const adminNav: NavItem[] = [
   { title: "Dashboard", href: "/admin", icon: "dashboard" },
   { title: "Products", href: "/admin/products", icon: "products" },
+  { title: "Categories", href: "/admin/categories", icon: "categories" },
   { title: "Orders", href: "/admin/orders", icon: "orders" },
   { title: "Inventory", href: "/admin/inventory", icon: "inventory" },
   { title: "Customers", href: "/admin/customers", icon: "customers" },

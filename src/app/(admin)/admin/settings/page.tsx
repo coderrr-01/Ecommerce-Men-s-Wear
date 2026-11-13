@@ -1,6 +1,9 @@
 import { ModulePlaceholder } from "@/features/admin-dashboard/components/module-placeholder";
+import { requireRole } from "@/features/auth/services/session.service";
 
-export default function AdminSettingsPage() {
+export default async function AdminSettingsPage() {
+  await requireRole(["ADMIN"]);
+
   return (
     <ModulePlaceholder
       title="Settings"

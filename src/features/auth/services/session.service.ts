@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import type { Role } from "@prisma/client";
 
 import { auth } from "@/auth";
+import { ForbiddenError, UnauthorizedError } from "@/lib/errors";
 import { prisma } from "@/lib/db";
 
 export const getSession = cache(async () => auth());
@@ -45,10 +46,26 @@ export async function requireUser(redirectTo = "/account") {
   return user;
 }
 
-export async function requireRole(roles: readonly Role[], redirectTo = "/admin") {
-  const user = await requireUser(redirectTo);
+interface RoleGuardOptions {
+  redirectTo?: string;
+  throwOnDenied?: boolean;
+}
+
+export async function requireRole(
+  roles: readonly Role[],
+  options: string | RoleGuardOptions = "/admin",
+) {
+  const { redirectTo, throwOnDenied } =
+    typeof options === "string" ? { redirectTo: options } : options;
+  const user = await getCurrentUser();
+
+  if (!user) {
+    if (throwOnDenied) throw new UnauthorizedError();
+    redirect(`/login?redirectTo=${encodeURIComponent(redirectTo ?? "/admin")}`);
+  }
 
   if (!roles.includes(user.role)) {
+    if (throwOnDenied) throw new ForbiddenError();
     redirect("/unauthorized");
   }
 
