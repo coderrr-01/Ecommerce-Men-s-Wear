@@ -1,6 +1,8 @@
 import "server-only";
 import { z } from "zod";
 
+import { siteConfig } from "@/config/site.config";
+
 /**
  * Server-side environment validation.
  *
@@ -29,7 +31,7 @@ const schema = z.object({
 
   EMAIL_PROVIDER: z.enum(["console", "resend"]).default("console"),
   RESEND_API_KEY: z.string().min(1).optional(),
-  EMAIL_FROM: z.string().min(3).default("Store <care@example.com>"),
+  EMAIL_FROM: z.string().min(3).default(`${siteConfig.name} <${siteConfig.contact.email}>`),
 
   SMS_PROVIDER: z.enum(["console"]).default("console"),
   SMS_SENDER_ID: z.string().optional(),

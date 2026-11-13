@@ -4,6 +4,7 @@ import { PrismaClient } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
+import { siteConfig } from "../src/config/site.config";
 import { seedCategories, seedProducts, seedSizeGuides, type SeedColor } from "./seed-data";
 
 const prisma = new PrismaClient();
@@ -14,10 +15,10 @@ const ALLOW_PROD_SEED = process.env.ALLOW_DEMO_SEED === "true";
 const DEMO_ADMIN_PASSWORD = "Admin@12345";
 const DEMO_CUSTOMER_PASSWORD = "Customer@12345";
 
-const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL ?? "admin@meridian.example";
+const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL ?? siteConfig.seed.adminEmail;
 const ADMIN_PASSWORD =
   process.env.SEED_ADMIN_PASSWORD ?? (DEMO_SEED ? DEMO_ADMIN_PASSWORD : undefined);
-const CUSTOMER_EMAIL = process.env.SEED_CUSTOMER_EMAIL ?? "customer@meridian.example";
+const CUSTOMER_EMAIL = process.env.SEED_CUSTOMER_EMAIL ?? siteConfig.seed.customerEmail;
 const CUSTOMER_PASSWORD =
   process.env.SEED_CUSTOMER_PASSWORD ?? (DEMO_SEED ? DEMO_CUSTOMER_PASSWORD : undefined);
 
@@ -63,10 +64,7 @@ async function seedUsers() {
         "Refusing to run demo seed in production. Set ALLOW_DEMO_SEED=true to override.",
       );
     }
-    if (
-      ADMIN_PASSWORD === DEMO_ADMIN_PASSWORD ||
-      CUSTOMER_PASSWORD === DEMO_CUSTOMER_PASSWORD
-    ) {
+    if (ADMIN_PASSWORD === DEMO_ADMIN_PASSWORD || CUSTOMER_PASSWORD === DEMO_CUSTOMER_PASSWORD) {
       throw new Error(
         "Refusing to seed production with the default demo credentials. Set SEED_ADMIN_PASSWORD and SEED_CUSTOMER_PASSWORD.",
       );
@@ -81,14 +79,14 @@ async function seedUsers() {
   await prisma.user.upsert({
     where: { email: ADMIN_EMAIL },
     update: {
-      name: "Meridian Admin",
+      name: siteConfig.seed.adminName,
       role: "ADMIN",
       isActive: true,
       passwordHash: adminHash,
     },
     create: {
       email: ADMIN_EMAIL,
-      name: "Meridian Admin",
+      name: siteConfig.seed.adminName,
       role: "ADMIN",
       isActive: true,
       passwordHash: adminHash,
@@ -99,14 +97,14 @@ async function seedUsers() {
   await prisma.user.upsert({
     where: { email: CUSTOMER_EMAIL },
     update: {
-      name: "Demo Customer",
+      name: siteConfig.seed.customerName,
       role: "CUSTOMER",
       isActive: true,
       passwordHash: customerHash,
     },
     create: {
       email: CUSTOMER_EMAIL,
-      name: "Demo Customer",
+      name: siteConfig.seed.customerName,
       role: "CUSTOMER",
       isActive: true,
       passwordHash: customerHash,
@@ -168,7 +166,7 @@ async function seedCatalog() {
       gender: "MEN" as const,
       isActive: true,
       isFeatured: product.isFeatured,
-      seoTitle: `${product.name} | Meridian`,
+      seoTitle: `${product.name} | ${siteConfig.name}`,
       seoDescription: product.shortDescription,
       seoKeywords: [
         product.name.toLowerCase(),
@@ -252,17 +250,17 @@ async function seedStoreContent() {
     update: {},
     create: {
       id: "default",
-      storeName: "Meridian",
-      supportEmail: "care@meridian.example",
-      supportPhone: "+91 98765 43210",
-      currency: "INR",
-      taxRateBps: 500,
-      pricesIncludeTax: true,
-      freeShippingThreshold: 149900,
-      standardShippingFee: 9900,
-      codFee: 4900,
-      returnWindowDays: 14,
-      codEnabled: true,
+      storeName: siteConfig.name,
+      supportEmail: siteConfig.contact.email,
+      supportPhone: siteConfig.contact.phone,
+      currency: siteConfig.currency,
+      taxRateBps: siteConfig.tax.rateBps,
+      pricesIncludeTax: siteConfig.tax.pricesIncludeTax,
+      freeShippingThreshold: siteConfig.shipping.freeShippingThreshold,
+      standardShippingFee: siteConfig.shipping.standardFee,
+      codFee: siteConfig.shipping.codFee,
+      returnWindowDays: siteConfig.policies.returnWindowDays,
+      codEnabled: siteConfig.features.cod,
       onlinePaymentEnabled: true,
     },
   });

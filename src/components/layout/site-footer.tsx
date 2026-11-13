@@ -47,7 +47,9 @@ export function SiteFooter() {
         ))}
 
         <div>
-          <h2 className="text-xs font-semibold tracking-[0.18em] uppercase">Contact</h2>
+          <h2 className="text-xs font-semibold tracking-[0.18em] uppercase">
+            {siteConfig.footer.contactHeading}
+          </h2>
           <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
             <li>
               <a href={`mailto:${siteConfig.contact.email}`} className="hover:text-foreground">
@@ -75,21 +77,14 @@ export function SiteFooter() {
       <div className="border-t border-border">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-3 px-4 py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
           <p>
-            © {new Date().getFullYear()} {siteConfig.legalName}. All rights reserved.
+            © {new Date().getFullYear()} {siteConfig.legalName}. {siteConfig.footer.rightsNote}
           </p>
           <div className="flex flex-wrap gap-5">
-            <Link href="/policies/shipping" className="hover:text-foreground">
-              Shipping
-            </Link>
-            <Link href="/policies/returns" className="hover:text-foreground">
-              Returns & exchanges
-            </Link>
-            <Link href="/policies/privacy" className="hover:text-foreground">
-              Privacy
-            </Link>
-            <Link href="/policies/terms" className="hover:text-foreground">
-              Terms
-            </Link>
+            {siteConfig.footer.policyLinks.map((link) => (
+              <Link key={link.href} href={link.href} className="hover:text-foreground">
+                {link.label}
+              </Link>
+            ))}
           </div>
         </div>
       </div>

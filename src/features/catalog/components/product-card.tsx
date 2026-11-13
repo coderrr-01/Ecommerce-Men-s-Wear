@@ -20,7 +20,7 @@ export function ProductCard({ product, priority = false, className }: ProductCar
             src={product.imageUrl}
             alt={product.imageAlt}
             fill
-            priority={priority}
+            preload={priority}
             sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
           />

@@ -1,3 +1,5 @@
+import { siteConfig } from "../src/config/site.config";
+
 export interface SeedColor {
   name: string;
   hex: string;
@@ -66,7 +68,7 @@ export const seedProducts: SeedProduct[] = [
     description:
       "A wardrobe anchor in brushed cotton oxford. Structured collar, mother-of-pearl buttons and a gently tapered body.",
     shortDescription: "Brushed cotton oxford with a clean, tapered fit.",
-    brand: "Meridian",
+    brand: siteConfig.name,
     fabric: "100% cotton oxford",
     fit: "Regular",
     occasion: "Everyday",
@@ -88,7 +90,7 @@ export const seedProducts: SeedProduct[] = [
     description:
       "Relaxed camp collar in washed European linen. A warm-weather shirt that softens with every wear.",
     shortDescription: "Washed linen with a relaxed camp collar.",
-    brand: "Meridian",
+    brand: siteConfig.name,
     fabric: "100% linen",
     fit: "Relaxed",
     occasion: "Resort",
@@ -109,7 +111,7 @@ export const seedProducts: SeedProduct[] = [
     description:
       "Crisp two-ply cotton poplin with a semi-cutaway collar. Cut slim through the chest and finished with a French placket.",
     shortDescription: "Two-ply poplin with a semi-cutaway collar.",
-    brand: "Meridian",
+    brand: siteConfig.name,
     fabric: "Two-ply cotton poplin",
     fit: "Slim",
     occasion: "Formal",
@@ -129,7 +131,7 @@ export const seedProducts: SeedProduct[] = [
     description:
       "A 240 GSM compact cotton tee with a ribbed neckline. Pre-shrunk and garment-dyed for depth of colour.",
     shortDescription: "240 GSM compact cotton with a structured drape.",
-    brand: "Meridian",
+    brand: siteConfig.name,
     fabric: "100% compact cotton, 240 GSM",
     fit: "Relaxed",
     occasion: "Everyday",
@@ -151,7 +153,7 @@ export const seedProducts: SeedProduct[] = [
     description:
       "Long-staple Pima cotton knitted in a fine gauge. A clean three-button placket and ribbed collar hold their shape.",
     shortDescription: "Fine-gauge Pima cotton with a neat collar.",
-    brand: "Meridian",
+    brand: siteConfig.name,
     fabric: "100% Pima cotton",
     fit: "Regular",
     occasion: "Smart casual",
@@ -171,7 +173,7 @@ export const seedProducts: SeedProduct[] = [
     description:
       "A textured waffle-knit henley in slub cotton. Layer it under a jacket or wear it on its own.",
     shortDescription: "Textured waffle knit with a three-button neckline.",
-    brand: "Meridian",
+    brand: siteConfig.name,
     fabric: "100% slub cotton",
     fit: "Regular",
     occasion: "Weekend",
@@ -192,7 +194,7 @@ export const seedProducts: SeedProduct[] = [
     description:
       "Single-pleat trousers in a lightweight wool blend. High rise, tapered leg and a clean finished hem.",
     shortDescription: "Single-pleat wool blend with a tapered leg.",
-    brand: "Meridian",
+    brand: siteConfig.name,
     fabric: "Wool-blend twill",
     fit: "Tapered",
     occasion: "Formal",
@@ -212,7 +214,7 @@ export const seedProducts: SeedProduct[] = [
     description:
       "A mid-rise chino in washed cotton twill. Garment-dyed for a lived-in tone and finished with a straight leg.",
     shortDescription: "Washed cotton twill with a straight leg.",
-    brand: "Meridian",
+    brand: siteConfig.name,
     fabric: "100% cotton twill",
     fit: "Straight",
     occasion: "Everyday",
@@ -234,7 +236,7 @@ export const seedProducts: SeedProduct[] = [
     description:
       "Half-lined suit trousers with a hidden extension waistband. Cut to sit cleanly over leather or suede.",
     shortDescription: "Half-lined tailoring with a hidden waistband.",
-    brand: "Meridian",
+    brand: siteConfig.name,
     fabric: "Wool-blend suiting",
     fit: "Slim",
     occasion: "Occasion",
@@ -254,7 +256,7 @@ export const seedProducts: SeedProduct[] = [
     description:
       "A four-pocket field jacket in waxed cotton. Corduroy collar, storm flap and a lightly insulated body.",
     shortDescription: "Waxed cotton field jacket with a corduroy collar.",
-    brand: "Meridian",
+    brand: siteConfig.name,
     fabric: "Waxed cotton",
     fit: "Regular",
     occasion: "Outdoor",
@@ -275,7 +277,7 @@ export const seedProducts: SeedProduct[] = [
     description:
       "A single-breasted overcoat in a brushed wool blend. Notch lapel, welt pockets and a full satin lining.",
     shortDescription: "Single-breasted brushed wool overcoat.",
-    brand: "Meridian",
+    brand: siteConfig.name,
     fabric: "Wool-blend melton",
     fit: "Regular",
     occasion: "Formal",
@@ -295,7 +297,7 @@ export const seedProducts: SeedProduct[] = [
     description:
       "Lightweight quilted bomber with ribbed trims. Insulated with recycled fill and cut for layering.",
     shortDescription: "Lightly quilted bomber with ribbed trims.",
-    brand: "Meridian",
+    brand: siteConfig.name,
     fabric: "Recycled nylon shell",
     fit: "Regular",
     occasion: "Weekend",
@@ -315,7 +317,7 @@ export const seedProducts: SeedProduct[] = [
     description:
       "A straight kurta in handloom cotton with a mandarin collar and side vents. Finished with a concealed placket.",
     shortDescription: "Handloom cotton kurta with a mandarin collar.",
-    brand: "Meridian",
+    brand: siteConfig.name,
     fabric: "Handloom cotton",
     fit: "Straight",
     occasion: "Festive",
@@ -336,7 +338,7 @@ export const seedProducts: SeedProduct[] = [
     description:
       "A structured Nehru jacket in silk-blend jacquard. Five-button front and a clean, collarless neckline.",
     shortDescription: "Silk-blend jacquard with a five-button front.",
-    brand: "Meridian",
+    brand: siteConfig.name,
     fabric: "Silk-blend jacquard",
     fit: "Slim",
     occasion: "Festive",
@@ -356,7 +358,7 @@ export const seedProducts: SeedProduct[] = [
     description:
       "A coordinated kurta and churidar set in cotton-silk. Subtle sheen, tonal stitching and a relaxed drape.",
     shortDescription: "Cotton-silk kurta with matching churidar.",
-    brand: "Meridian",
+    brand: siteConfig.name,
     fabric: "Cotton-silk blend",
     fit: "Regular",
     occasion: "Wedding",

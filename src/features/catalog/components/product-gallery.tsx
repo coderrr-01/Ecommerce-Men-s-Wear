@@ -26,7 +26,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
           src={active.url}
           alt={active.alt}
           fill
-          priority
+          preload
           sizes="(min-width: 1024px) 50vw, 100vw"
           className="object-cover"
         />
@@ -48,7 +48,14 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
                   : "border-transparent opacity-70 hover:opacity-100",
               )}
             >
-              <Image src={image.url} alt="" fill sizes="80px" className="object-cover" />
+              <Image
+                src={image.url}
+                alt=""
+                fill
+                loading="eager"
+                sizes="80px"
+                className="object-cover"
+              />
             </button>
           ))}
         </div>

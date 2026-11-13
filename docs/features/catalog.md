@@ -2,13 +2,13 @@
 
 ## Routes
 
-| Route              | Description                                                            |
-| ------------------ | ---------------------------------------------------------------------- |
-| `/`                | Hero, featured products, category tiles and new arrivals from services |
-| `/shop`            | Catalogue listing with filters, sorting, pagination                    |
-| `/products/[slug]` | Gallery, variant selection, stock state, add-to-cart panel             |
+| Route              | Description                                                                 |
+| ------------------ | --------------------------------------------------------------------------- |
+| `/`                | Config-driven hero, featured products, category tiles and editorial section |
+| `/shop`            | Catalogue listing with filters, sorting, pagination                         |
+| `/products/[slug]` | Gallery, variant selection, stock state, add-to-cart panel                  |
 
-All catalogue pages are `force-dynamic` because the header reads the session/cart and the content comes from PostgreSQL.
+All catalogue pages are `force-dynamic` because the header reads the session/cart and the content comes from PostgreSQL. The home page's announcement, hero, benefit strip, section headings, editorial copy and images come from `src/config/site.config.ts`; product and category content come from services and the database.
 
 ## Data flow
 
@@ -51,9 +51,11 @@ Allowed next/image hosts are declared in `next.config.ts`:
 
 Fallback asset: `public/placeholder.svg`.
 
+Above-the-fold primary images use `preload`, and gallery thumbnails use `loading="eager"` so Next.js does not emit LCP dev warnings. The `priority` prop is deprecated in Next.js 16.
+
 ## Seed catalogue
 
-`prisma/seed-data.ts` provides 5 categories and 15 menswear products with size/colour variants, images and size guides. Product `basePrice` is derived from the lowest/first variant price so list sorting matches displayed pricing.
+`prisma/seed-data.ts` provides 5 categories and 15 menswear products with size/colour variants, images and size guides. Product brand values and store settings come from `src/config/site.config.ts`. Product `basePrice` is derived from the lowest/first variant price so list sorting matches displayed pricing.
 
 ## Known gaps
 

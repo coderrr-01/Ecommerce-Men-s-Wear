@@ -2,7 +2,12 @@ import "dotenv/config";
 
 import { PrismaClient } from "@prisma/client";
 
+import { siteConfig } from "../src/config/site.config";
+
 const prisma = new PrismaClient();
+
+const seededAdminEmail = process.env.SEED_ADMIN_EMAIL ?? siteConfig.seed.adminEmail;
+const seededCustomerEmail = process.env.SEED_CUSTOMER_EMAIL ?? siteConfig.seed.customerEmail;
 
 async function main() {
   const [users, categories, products, variants, images, featured, admins, customers] =
@@ -18,11 +23,11 @@ async function main() {
     ]);
 
   const seededAdmin = await prisma.user.findUnique({
-    where: { email: "admin@meridian.example" },
+    where: { email: seededAdminEmail },
     select: { email: true, role: true, isActive: true },
   });
   const seededCustomer = await prisma.user.findUnique({
-    where: { email: "customer@meridian.example" },
+    where: { email: seededCustomerEmail },
     select: { email: true, role: true, isActive: true },
   });
 

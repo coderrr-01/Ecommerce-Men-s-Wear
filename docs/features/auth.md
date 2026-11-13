@@ -7,6 +7,7 @@
 - Registration always creates `CUSTOMER`; staff/admin roles are assigned directly in the database or a future admin screen.
 - Unknown emails run a dummy bcrypt comparison to reduce timing differences.
 - Inactive or soft-deleted users are rejected by the credentials provider and by the DB-backed session guard.
+- Brand-facing auth copy reads the shop name from `src/config/site.config.ts`.
 
 ## Routes
 

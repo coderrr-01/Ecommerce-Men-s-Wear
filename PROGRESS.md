@@ -8,22 +8,23 @@ Foundation complete. Storefront browsing and authentication work end to end; car
 
 ## Completed
 
-| Area            | State             | Notes                                                                         |
-| --------------- | ----------------- | ----------------------------------------------------------------------------- |
-| Project tooling | Done              | Next 16.4, TS strict, Tailwind v4, ESLint, Prettier, Vitest, pnpm approvals   |
-| Config/env      | Done              | Zod env validation, central site/theme/navigation config                      |
-| Database schema | Done              | 17 models, enums, indexes, soft deletes, initial migration SQL                |
-| Seed            | Done              | 5 categories, 15 products, users, coupons, banner, settings; production guard |
-| Auth            | Done              | Credentials, register, logout, JWT roles, DB-backed guards, proxy             |
-| UI shell        | Done              | Primitives, header/footer, account/admin layouts, policy pages                |
-| Catalogue       | Done              | Home, shop filters/sort/pagination, product detail                            |
-| Cart            | Done (signed-in)  | Transactional merges, stock checks, totals, header count                      |
-| Admin dashboard | Done (read-only)  | Product/order/customer/low-stock metrics                                      |
-| Health          | Done              | DB check, 200/503                                                             |
-| Providers       | Done (interfaces) | Mock/Razorpay, Cloudinary, console/Resend, console SMS                        |
-| Tests           | Done              | 5 files, 27 passing unit tests                                                |
-| Quality gates   | Passing           | lint, typecheck, test, build                                                  |
-| Documentation   | Done              | README, setup, architecture, DB, API, features, ADRs, changelog, agent guide  |
+| Area            | State             | Notes                                                                            |
+| --------------- | ----------------- | -------------------------------------------------------------------------------- |
+| Project tooling | Done              | Next 16.4, TS strict, Tailwind v4, ESLint, Prettier, Vitest, pnpm approvals      |
+| Config/env      | Done              | Zod env validation; brand, copy, contact, commerce and seed defaults centralised |
+| Database schema | Done              | 17 models, enums, indexes, soft deletes, initial migration SQL                   |
+| Seed            | Done              | 5 categories, 15 products, users, coupons, banner, settings; production guard    |
+| Auth            | Done              | Credentials, register, logout, JWT roles, DB-backed guards, proxy                |
+| UI shell        | Done              | Primitives, header/footer, account/admin layouts, policy pages                   |
+| Catalogue       | Done              | Home, shop filters/sort/pagination, product detail                               |
+| Cart            | Done (signed-in)  | Transactional merges, stock checks, totals, header count                         |
+| Admin dashboard | Done (read-only)  | Product/order/customer/low-stock metrics                                         |
+| Health          | Done              | DB check, 200/503                                                                |
+| Providers       | Done (interfaces) | Mock/Razorpay, Cloudinary, console/Resend, console SMS                           |
+| Tests           | Done              | 5 files, 27 passing unit tests                                                   |
+| Quality gates   | Passing           | lint, typecheck, test, build                                                     |
+| Dev overlay     | Fixed             | Smooth-scroll and product LCP image warnings resolved                            |
+| Documentation   | Done              | README, setup, architecture, DB, API, features, ADRs, changelog, agent guide     |
 
 ## Verification
 
@@ -34,11 +35,16 @@ pnpm lint       -> pass
 pnpm typecheck  -> pass
 pnpm test       -> 5 files, 27 tests pass
 pnpm build      -> pass (Next.js 16.4.6, Turbopack)
+pnpm db:seed    -> pass (5 categories, 15 products, 172 variants, 30 images)
 ```
+
+Dev overlay: clean headless Chrome loads of `/`, `/shop`, `/products/classic-oxford-shirt`, `/login` and `/policies/shipping` produced no application warnings or errors. The previous `Detected scroll-behavior: smooth on the <html> element` and product LCP image warnings are gone.
+
+Seed verification: local PostgreSQL was reachable; the seeded `StoreSettings` row matches `site.config.ts` for brand, contact, currency, tax, free-shipping threshold, shipping fees, COD and return window.
 
 Not verified locally:
 
-- `pnpm db:migrate` and `pnpm db:seed` (no PostgreSQL server available).
+- `pnpm db:migrate` (the existing local database was already migrated).
 - Runtime pages with real data, auth login, add-to-cart and admin metrics against a live database.
 - Provider calls to Razorpay, Cloudinary or Resend (no credentials).
 
@@ -50,6 +56,7 @@ Not verified locally:
 - Proxy redirects are optimistic; authorization must always be re-checked in layouts/actions.
 - Soft deletes are not automatic in Prisma queries.
 - Tests cover pure logic only; no integration tests yet.
+- Browser extensions that modify the DOM can create React hydration warnings in development; verify with a clean profile before treating them as application bugs.
 
 ## Next milestones
 

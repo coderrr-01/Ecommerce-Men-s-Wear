@@ -41,7 +41,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang={siteConfig.locale}>
+    <html lang={siteConfig.locale} data-scroll-behavior="smooth">
       <head>
         <style dangerouslySetInnerHTML={{ __html: themeCss }} />
       </head>

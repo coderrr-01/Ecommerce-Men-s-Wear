@@ -35,6 +35,33 @@ Optional providers:
 
 All environment access is validated in `src/env.ts`.
 
+### Brand and storefront copy
+
+Edit `src/config/site.config.ts` before launching a real shop. Nothing brand-facing should be hardcoded in components or seed data.
+
+| Area               | Fields to edit                                                                                                                              |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Identity           | `name`, `shortName`, `legalName`, `tagline`, `description`, `logo.wordmark`, `logo.mark`                                                    |
+| Contact            | `contact.email`, `contact.phone`, `contact.whatsapp`, `contact.hours`                                                                       |
+| Address            | `address.line1`, `address.line2`, `address.city`, `address.state`, `address.postalCode`, `address.country`                                  |
+| Social links       | `social[]` (`label`, `href`)                                                                                                                |
+| Announcement bar   | `announcement.shipping`                                                                                                                     |
+| Home hero          | `hero.eyebrow`, `hero.titleLines`, `hero.description`, `hero.imageUrl`, `hero.imageAlt`, `hero.primaryCta`, `hero.secondaryCta`             |
+| Home sections      | `home.benefits`, `home.categories`, `home.featured`, `home.editorial`                                                                       |
+| Footer             | `footer.contactHeading`, `footer.rightsNote`, `footer.policyLinks`                                                                          |
+| Shipping           | `shipping.freeShippingThreshold` (paise), `shipping.standardFee`, `shipping.codFee`, `shipping.estimatedDays`, `shipping.returnsWindowDays` |
+| Tax                | `tax.label`, `tax.rateBps`, `tax.pricesIncludeTax`                                                                                          |
+| Policies           | `policies.exchangeWindowDays`, `policies.returnWindowDays`, `policies.refundProcessingDays`                                                 |
+| SEO                | `seo.titleTemplate`, `seo.keywords`                                                                                                         |
+| Feature flags      | `features.wishlist`, `features.reviews`, `features.coupons`, `features.guestCheckout`, `features.cod`                                       |
+| Demo seed accounts | `seed.adminName`, `seed.adminEmail`, `seed.customerName`, `seed.customerEmail`                                                              |
+| Theme              | `theme.*` colour tokens and `theme.radius`                                                                                                  |
+| Locale/currency    | `locale`, `currency`, `currencySymbol`, `defaultCountry`, `timezone`; canonical URL comes from `NEXT_PUBLIC_SITE_URL`                       |
+
+Money values are integer paise: `149900` is ₹1,499.00.
+
+After changing seed-related values, run `pnpm db:seed` to refresh product brands, SEO titles and seeded accounts. `StoreSettings` is only created when absent and is not overwritten, so update it in the database (or reset a disposable database) if it already exists. `EMAIL_FROM` defaults to the configured brand and contact email when left empty.
+
 ## 3. Database
 
 Create the database, then:

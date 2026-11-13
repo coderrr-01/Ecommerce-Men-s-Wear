@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { siteConfig } from "@/config/site.config";
 import { loginAction } from "@/features/auth/actions/auth.actions";
 import { initialAuthState } from "@/features/auth/types";
 
@@ -92,7 +93,7 @@ export function LoginForm({ redirectTo, registered }: LoginFormProps) {
       </form>
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
-        New to Meridian?{" "}
+        New to {siteConfig.name}?{" "}
         <Link href="/register" className="font-medium text-foreground underline underline-offset-4">
           Create an account
         </Link>

@@ -47,8 +47,10 @@ Feature modules live under `src/features/<feature>/` with `actions`, `components
 
 ## Configuration
 
-- `src/config/site.config.ts` is the single source for brand, contact, social, shipping, tax, policies and SEO defaults.
+- `src/config/site.config.ts` is the single source for brand, contact, social, storefront copy (announcement, hero, home sections, footer), shipping, tax, policies, SEO and demo-seed defaults.
 - `src/config/theme.ts` converts theme values into CSS variables injected by the root layout.
+- `prisma/seed.ts`, `prisma/seed-data.ts` and operational scripts read brand/contact/commerce defaults from `site.config.ts`; do not reintroduce literals there.
+- Root layout must keep `data-scroll-behavior="smooth"` while `globals.css` enables smooth scrolling, otherwise Next.js 16 emits a dev overlay warning.
 - `src/config/navigation.ts` owns store, account and admin navigation.
 - `src/config/constants.ts` owns page sizes, sort options, status labels and placeholders.
 

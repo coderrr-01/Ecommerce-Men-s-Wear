@@ -4,6 +4,22 @@ All notable changes to Meridian are documented here. Format follows [Keep a Chan
 
 ## [Unreleased]
 
+### Added
+
+- Storefront copy configuration for the announcement bar, home hero, home sections and footer in `src/config/site.config.ts`; hero/editorial imagery and alt text are configurable too.
+- Demo seed names and email defaults in `siteConfig.seed`, consumed by `prisma/seed.ts` and `scripts/db-check.ts`.
+- Brand customisation guide in `docs/SETUP.md` and ADR 0006.
+
+### Changed
+
+- The seed and DB-check script now read brand, contact, shipping, tax, policy and store-settings defaults from `site.config.ts` instead of duplicating placeholders.
+- The default `EMAIL_FROM` now derives from the configured brand name and contact email.
+
+### Fixed
+
+- Removed the Next.js 16 dev overlay warning `Detected scroll-behavior: smooth on the <html> element` by declaring `data-scroll-behavior="smooth"` on the root `<html>` element.
+- Removed the product-page LCP dev warnings by preloading primary catalogue images and eagerly loading gallery thumbnails; migrated the deprecated `next/image` `priority` prop to `preload`.
+
 ## [0.1.0] - 2026-11-13
 
 ### Added
