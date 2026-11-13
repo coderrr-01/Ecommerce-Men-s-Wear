@@ -56,7 +56,7 @@ export function InventoryTable({
 
   async function saveBulk() {
     const stock = Number(targetStock);
-    if (!Number.isSafeInteger(stock) || stock < 0 || stock > 1_000_000) {
+    if (!targetStock.trim() || !Number.isSafeInteger(stock) || stock < 0 || stock > 1_000_000) {
       toast.error("Enter a whole stock quantity between 0 and 1,000,000.");
       return;
     }

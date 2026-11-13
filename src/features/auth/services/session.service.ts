@@ -5,8 +5,11 @@ import { redirect } from "next/navigation";
 import type { Role } from "@prisma/client";
 
 import { auth } from "@/auth";
+import { hasRole } from "@/features/auth/role.utils";
 import { ForbiddenError, UnauthorizedError } from "@/lib/errors";
 import { prisma } from "@/lib/db";
+
+export { hasRole } from "@/features/auth/role.utils";
 
 export const getSession = cache(async () => auth());
 
@@ -64,14 +67,10 @@ export async function requireRole(
     redirect(`/login?redirectTo=${encodeURIComponent(redirectTo ?? "/admin")}`);
   }
 
-  if (!roles.includes(user.role)) {
+  if (!hasRole(user, roles)) {
     if (throwOnDenied) throw new ForbiddenError();
     redirect("/unauthorized");
   }
 
   return user;
-}
-
-export function hasRole(user: { role: Role } | null | undefined, roles: readonly Role[]): boolean {
-  return Boolean(user && roles.includes(user.role));
 }

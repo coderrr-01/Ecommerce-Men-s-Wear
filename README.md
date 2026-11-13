@@ -53,7 +53,8 @@ Override these with `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `SEED_CUSTOMER_EM
 - Generated initial migration plus an idempotent seed: 5 categories, 15 products with size/colour variants, 2 users, coupons and a banner.
 - Auth.js credentials authentication, registration, JWT sessions, role checks and route protection through `src/proxy.ts` plus server-side guards.
 - Storefront home, catalogue listing/filtering/pagination, product detail, cart and policy pages.
-- Account and admin shells; admin dashboard metrics.
+- Account and admin shells; role-guarded category/product/variant management, product image
+  uploads, audited inventory adjustments/CSV export, and live dashboard metrics.
 - Provider adapters for payment (mock/Razorpay), storage (Cloudinary) and email/SMS (console/Resend).
 - Unit tests for money formatting, redirects, catalogue URLs, cart totals, validation and stock rules.
 - Passed `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm build`.
@@ -63,7 +64,9 @@ Override these with `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `SEED_CUSTOMER_EM
 - Checkout, order creation, payment capture/webhooks and transactional stock decrement are not wired yet.
 - Address CRUD, wishlist toggling, reviews submission and admin CRUD screens are scaffolded but not implemented.
 - Password reset email is not enabled.
-- The local machine used to build this had no PostgreSQL instance, so the migration was generated with `prisma migrate diff` and the seed was not executed here.
+- Admin catalog fields and stock-audit tables are tracked in the generated migration
+  `20261113114155_admin_catalog_stock_movements`; database verification status is recorded in
+  [progress](docs/PROGRESS.md).
 
 ## Documentation
 

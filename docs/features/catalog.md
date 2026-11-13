@@ -33,6 +33,26 @@ page (server component)
 
 Repositories filter `deletedAt: null` and `isActive: true` (plus active category and variants where relevant). Services map prices into presentation data and compute rating aggregates.
 
+## Admin catalog management
+
+The admin routes `/admin/categories` and `/admin/products` provide nested category CRUD,
+search/filter/paginated products, bulk status changes, and product/variant create and edit forms.
+Product inputs use Zod schemas, unique slug/SKU checks and size-set validation. Prices are entered
+as rupees and converted exactly to integer paise before persistence. Product and variant changes are
+written through the catalog service/repository layers; stock deltas create `StockMovement` records.
+
+The edit screen manages up to eight images per product. Its guarded multipart route validates
+JPEG/PNG/WebP bytes and a 5 MB file limit before using the `StorageProvider`. Image order, primary
+selection and alt text are persisted; deletion is ADMIN-only and soft-deletes the gallery record.
+Cloudinary credentials are server-only. When storage is unconfigured the editor explains the
+limitation rather than crashing.
+
+Draft and soft-deleted products remain excluded from storefront product queries. Soft-deleted
+images are likewise excluded from product cards and product detail galleries.
+
+See [admin-panel.md](./admin-panel.md), [inventory.md](./inventory.md) and [API.md](../API.md) for
+roles, action contracts and audit behavior.
+
 ## Filters and sorting
 
 `/shop` accepts:

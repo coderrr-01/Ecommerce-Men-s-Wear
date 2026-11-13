@@ -83,6 +83,8 @@ Business logic must depend on the interfaces, not provider SDKs. Razorpay is imp
 
 - Checkout/order placement and payment webhooks are not implemented.
 - Stock is validated for cart operations but is not decremented transactionally at order placement because there is no order flow yet.
-- Admin CRUD, wishlist, reviews, address management and password reset are scaffolded only.
+- Category/product/variant CRUD, product images, inventory adjustments and dashboard metrics are
+  implemented in the admin feature layers; orders, customer management, settings, wishlist,
+  reviews, address management and password reset remain incomplete.
 
 See `PROGRESS.md` for the next milestones.

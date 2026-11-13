@@ -6,6 +6,8 @@ Documents for implemented slices and known gaps.
 - [Catalogue and storefront](catalog.md)
 - [Cart](cart.md)
 - [Admin](admin.md)
+- [Admin panel](admin-panel.md)
+- [Inventory management](inventory.md)
 - [Checkout and orders](checkout-and-orders.md)
 - [Wishlist, reviews and addresses](account.md)
 

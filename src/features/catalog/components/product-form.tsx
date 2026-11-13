@@ -72,6 +72,7 @@ export function ProductForm({
     handleSubmit,
     setError,
     clearErrors,
+    reset,
     formState: { isDirty, isSubmitting },
   } = form;
 
@@ -107,6 +108,7 @@ export function ProductForm({
     if (!product) {
       router.push(`/admin/products/${response.data.id}/edit#images`);
     } else {
+      reset(values);
       router.refresh();
     }
   }

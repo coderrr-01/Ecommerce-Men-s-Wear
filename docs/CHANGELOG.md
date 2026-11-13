@@ -1,5 +1,22 @@
 # Documentation changelog
 
+## 2026-11-13 — Admin catalog management
+
+- Documented the admin shell, categories, products/variants, Cloudinary image workflow, inventory
+  adjustments and stock audit model in `features/admin-panel.md`, `features/inventory.md`,
+  `features/catalog.md`, `DATABASE.md` and `API.md`.
+- Updated root and docs progress reports and recorded the Sonner dependency in ADR 0007.
+- Implementation files: `src/app/(admin)/admin`, `src/app/api/admin`,
+  `src/features/catalog`, `src/features/inventory`, `src/features/admin-dashboard`,
+  `src/features/auth/role.utils.ts`, `src/lib/providers/storage/index.ts`, and unit tests.
+- Live PostgreSQL verification covered category deletion rules, a 3-variant product lifecycle,
+  paise conversion, inline/bulk stock movement audits and storefront 404 after soft deletion.
+  Two Cloudinary test images were uploaded, metadata/reordering controls exercised, and both
+  remote assets deleted. Logged-out/CUSTOMER admin page and image-route denials were verified.
+- Fixed `src/features/catalog/components/product-form.tsx` to reset React Hook Form state after a
+  successful edit, preventing a stale unsaved-changes warning on navigation.
+- Updated `docs/PROGRESS.md` and `PROGRESS.md` with live verification results and remaining checks.
+
 ## 2026-11-13 — Storefront UI refresh
 
 - Added the storefront token/typography/component guide at `features/ui-design-system.md`.

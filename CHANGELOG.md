@@ -4,12 +4,25 @@ All notable changes to Meridian are documented here. Format follows [Keep a Chan
 
 ## [Unreleased]
 
+### Added
+
+- Admin catalog operations for nested categories, product/variant management, Cloudinary-backed
+  product image uploads, audited inventory adjustments, CSV export and live dashboard metrics.
+- `StockMovement` audit history and product size-set/care/new-arrival fields through the generated
+  `20261113114155_admin_catalog_stock_movements` migration.
+- Sonner feedback for admin mutations, role-protected inventory/image endpoints and unit coverage
+  for admin validation and stock rules.
+
 ### Changed
 
 - Refreshed the storefront with config-driven semantic theme aliases, editorial typography,
   responsive home sections, a scroll-aware header with mobile/search/cart dialogs, revised
   catalogue/product/cart/auth UI, and accessible loading/empty states. See
   `docs/features/ui-design-system.md`.
+- Updated admin catalog, inventory and dashboard documentation; added the admin-panel and
+  inventory feature guides and the Sonner ADR.
+- Successful product edits reset React Hook Form's dirty state, so navigation no longer triggers a
+  false unsaved-changes warning.
 
 ### Added
 
