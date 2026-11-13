@@ -3,8 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { ProductGallery } from "@/features/catalog/components/product-gallery";
-import { ProductGrid } from "@/features/catalog/components/product-grid";
 import { ProductPurchasePanel } from "@/features/catalog/components/product-purchase-panel";
+import { ProductStory } from "@/features/catalog/components/product-story";
 import { getProductDetail, getRelatedProducts } from "@/features/catalog/services/catalog.service";
 import { siteConfig } from "@/config/site.config";
 import { formatPrice } from "@/lib/utils";
@@ -143,73 +143,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </div>
       </div>
 
-      <div className="mt-14 grid gap-10 border-t border-border pt-10 lg:grid-cols-[1.5fr_1fr]">
-        <section>
-          <h2 className="font-serif text-2xl tracking-tight">The details</h2>
-          <p className="mt-4 text-sm leading-7 whitespace-pre-line text-muted-foreground">
-            {product.description}
-          </p>
-        </section>
-        <section className="rounded-md bg-secondary/60 p-6">
-          <h2 className="text-xs font-semibold tracking-[0.18em] uppercase">Care & fit notes</h2>
-          <ul className="mt-4 space-y-3 text-sm leading-6 text-muted-foreground">
-            <li>
-              Designed for a {product.fit?.toLowerCase() ?? "regular"} fit. Take your usual size.
-            </li>
-            <li>Cold machine wash. Dry flat in shade. Warm iron if needed.</li>
-            <li>Questions about sizing? Write to {siteConfig.contact.email} and we will help.</li>
-          </ul>
-        </section>
-      </div>
-
-      <section className="mt-14 border-t border-border pt-10">
-        <h2 className="font-serif text-2xl tracking-tight">Reviews</h2>
-        {product.reviews.length === 0 ? (
-          <p className="mt-4 text-sm text-muted-foreground">
-            No reviews yet. Purchases can be reviewed from your account after delivery.
-          </p>
-        ) : (
-          <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {product.reviews.map((review) => (
-              <article key={review.id} className="rounded-md border border-border p-5">
-                <p aria-label={`${review.rating} out of 5 stars`}>
-                  <span aria-hidden="true" className="text-accent">
-                    {"★".repeat(review.rating)}
-                    {"☆".repeat(5 - review.rating)}
-                  </span>
-                </p>
-                {review.title ? <h3 className="mt-3 font-medium">{review.title}</h3> : null}
-                {review.comment ? (
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{review.comment}</p>
-                ) : null}
-                <p className="mt-4 text-xs text-muted-foreground">
-                  {review.author} ·{" "}
-                  {review.createdAt.toLocaleDateString(siteConfig.locale, {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </p>
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {related.length > 0 ? (
-        <section className="mt-14 border-t border-border pt-10">
-          <div className="mb-6 flex items-end justify-between gap-4">
-            <h2 className="font-serif text-2xl tracking-tight">You may also like</h2>
-            <Link
-              href={`/shop?category=${product.categorySlug}`}
-              className="text-sm underline underline-offset-4 hover:text-accent"
-            >
-              View all {product.categoryName.toLowerCase()}
-            </Link>
-          </div>
-          <ProductGrid products={related} />
-        </section>
-      ) : null}
+      <ProductStory product={product} related={related} />
     </div>
   );
 }

@@ -1,14 +1,13 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useState } from "react";
+import { ShieldCheck, Truck } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { AddToCartForm } from "@/features/catalog/components/add-to-cart-form";
+import { SizeGuide } from "@/features/catalog/components/size-guide";
 import { siteConfig } from "@/config/site.config";
-import { addToCartAction } from "@/features/cart/actions/cart.actions";
-import { initialCartActionState } from "@/features/cart/types";
 import type { ProductVariantOption } from "@/features/catalog/types";
 import { cn, formatPrice } from "@/lib/utils";
 
@@ -28,63 +27,6 @@ function firstAvailableSize(variants: ProductVariantOption[], color: string): st
     .filter((variant) => variant.color === color)
     .sort((a, b) => compareSizes(a.size, b.size));
   return (sizes.find((variant) => variant.stock > 0) ?? sizes[0])?.size ?? "";
-}
-
-function AddToCartForm({ variantId, maxQuantity }: { variantId: string; maxQuantity: number }) {
-  const [state, formAction, isPending] = useActionState(addToCartAction, initialCartActionState);
-  const pathname = usePathname();
-
-  return (
-    <form action={formAction} className="space-y-3">
-      <input type="hidden" name="variantId" value={variantId} />
-      <div className="flex gap-2">
-        <select
-          name="quantity"
-          aria-label="Quantity"
-          className="h-11 w-20 rounded-md border border-input bg-background px-2 text-sm"
-          defaultValue="1"
-        >
-          {Array.from({ length: Math.max(1, maxQuantity) }, (_, index) => (
-            <option key={index + 1} value={index + 1}>
-              {index + 1}
-            </option>
-          ))}
-        </select>
-        <Button type="submit" size="lg" className="flex-1" disabled={isPending}>
-          {isPending ? "Adding…" : "Add to bag"}
-        </Button>
-      </div>
-
-      {state.status === "error" && state.message ? (
-        <p
-          role="alert"
-          className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"
-        >
-          {state.message}{" "}
-          {state.requiresAuth ? (
-            <Link
-              href={`/login?redirectTo=${encodeURIComponent(pathname)}`}
-              className="font-medium underline underline-offset-4"
-            >
-              Sign in
-            </Link>
-          ) : null}
-        </p>
-      ) : null}
-
-      {state.status === "success" && state.message ? (
-        <p
-          role="status"
-          className="rounded-md border border-accent/30 bg-accent/5 px-3 py-2 text-sm text-accent"
-        >
-          {state.message}{" "}
-          <Link href="/cart" className="font-medium underline underline-offset-4">
-            View bag
-          </Link>
-        </p>
-      ) : null}
-    </form>
-  );
 }
 
 interface ProductPurchasePanelProps {
@@ -132,7 +74,7 @@ export function ProductPurchasePanel({ variants }: ProductPurchasePanelProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20 lg:pb-0">
       <div className="space-y-2">
         <div className="flex flex-wrap items-baseline gap-3">
           <span className="text-2xl font-semibold">{formatPrice(price)}</span>
@@ -172,7 +114,7 @@ export function ProductPurchasePanel({ variants }: ProductPurchasePanelProps) {
               >
                 <span
                   className="size-6 rounded-full border border-black/10"
-                  style={{ backgroundColor: color.hex ?? "#d6d3d1" }}
+                  style={{ backgroundColor: color.hex ?? "var(--muted)" }}
                 />
               </button>
             ))}
@@ -186,6 +128,7 @@ export function ProductPurchasePanel({ variants }: ProductPurchasePanelProps) {
             <p className="text-sm font-medium">
               Size: <span className="font-normal">{selectedSize}</span>
             </p>
+            <SizeGuide sizes={sizes} />
           </div>
           <div className="flex flex-wrap gap-2">
             {sizes.map((variant) => (
@@ -230,6 +173,7 @@ export function ProductPurchasePanel({ variants }: ProductPurchasePanelProps) {
             key={selectedVariant.id}
             variantId={selectedVariant.id}
             maxQuantity={Math.min(10, stock)}
+            priceLabel={formatPrice(price)}
           />
         ) : (
           <Button type="button" size="lg" className="w-full" disabled>
@@ -239,8 +183,13 @@ export function ProductPurchasePanel({ variants }: ProductPurchasePanelProps) {
       </div>
 
       <div className="space-y-2 border-t border-border pt-5 text-sm text-muted-foreground">
-        <p>
+        <p className="flex items-center gap-2">
+          <Truck className="size-4 shrink-0" aria-hidden="true" />
           Free shipping on orders over {formatPrice(siteConfig.shipping.freeShippingThreshold)}.
+        </p>
+        <p className="flex items-center gap-2">
+          <ShieldCheck className="size-4 shrink-0" aria-hidden="true" />
+          {siteConfig.home.benefits.payments.title}
         </p>
         <p>{siteConfig.shipping.returnsWindowDays}-day returns and exchanges.</p>
         {selectedVariant ? <p className="text-xs">SKU: {selectedVariant.sku}</p> : null}

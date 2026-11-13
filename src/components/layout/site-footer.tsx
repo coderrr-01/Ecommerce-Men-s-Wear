@@ -6,8 +6,8 @@ import { siteConfig } from "@/config/site.config";
 
 export function SiteFooter() {
   return (
-    <footer className="mt-auto border-t border-border bg-secondary/40">
-      <div className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
+    <footer className="mt-auto border-t border-border bg-secondary/30">
+      <div className="mx-auto grid w-full max-w-[1440px] gap-10 px-5 py-14 sm:px-8 md:grid-cols-2 lg:grid-cols-4 lg:px-12 lg:py-16">
         <div className="space-y-4">
           <Logo />
           <p className="max-w-xs text-sm leading-6 text-muted-foreground">
@@ -20,6 +20,7 @@ export function SiteFooter() {
                 href={item.href}
                 target="_blank"
                 rel="noreferrer"
+                aria-label={item.label}
                 className="underline-offset-4 hover:text-foreground hover:underline"
               >
                 {item.label}
@@ -75,7 +76,7 @@ export function SiteFooter() {
       </div>
 
       <div className="border-t border-border">
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-3 px-4 py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+        <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-3 px-5 py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-12">
           <p>
             © {new Date().getFullYear()} {siteConfig.legalName}. {siteConfig.footer.rightsNote}
           </p>

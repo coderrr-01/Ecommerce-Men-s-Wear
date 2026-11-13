@@ -6,6 +6,7 @@
 - `/account/orders`, `/account/addresses` and `/account/wishlist` are guarded shells.
 - Sign-out is a server action.
 - The header exposes account/admin links based on the session.
+- The account shell uses the shared storefront typography and responsive navigation.
 
 ## Addresses
 

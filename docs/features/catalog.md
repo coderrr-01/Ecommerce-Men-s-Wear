@@ -10,6 +10,17 @@
 
 All catalogue pages are `force-dynamic` because the header reads the session/cart and the content comes from PostgreSQL. The home page's announcement, hero, benefit strip, section headings, editorial copy and images come from `src/config/site.config.ts`; product and category content come from services and the database.
 
+## Storefront presentation
+
+- The home page uses a full-bleed configured hero, category tiles, trust-benefit strip, configurable
+  shipping promotion, horizontally scrollable featured products and an editorial grid.
+- Shop filters retain server-rendered query links; mobile controls open as a bottom sheet and active
+  search/category/size values can be cleared independently.
+- Product imagery supports thumbnail selection, mobile swipe and a native image zoom dialog.
+  Purchase controls keep the existing server action and include a mobile sticky add-to-bag bar.
+- Shop loading and storefront not-found UI are route-group components.
+- See `ui-design-system.md` for tokens, typography, motion and rebranding.
+
 ## Data flow
 
 ```
@@ -63,3 +74,5 @@ Above-the-fold primary images use `preload`, and gallery thumbnails use `loading
 - No search index or fuzzy search; current search uses `contains` with `mode: "insensitive"`.
 - No category landing pages beyond `/shop?category=`.
 - No stock reservation while browsing; stock is checked when adding/updating the cart.
+- Product cards expose one image and no variants, so alternate-image hover, quick-add and card-level wishlist actions await a richer DTO and implemented wishlist action.
+- Per-product garment measurements are not part of the detail DTO; the size guide explicitly directs customers to contact support.

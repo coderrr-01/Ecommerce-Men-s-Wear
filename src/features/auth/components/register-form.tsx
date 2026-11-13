@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ import { initialAuthState } from "@/features/auth/types";
 
 export function RegisterForm() {
   const [state, formAction, isPending] = useActionState(registerAction, initialAuthState);
+  const [showPasswords, setShowPasswords] = useState(false);
 
   return (
     <div className="rounded-lg border border-border bg-card p-6 shadow-sm sm:p-8">
@@ -54,11 +56,23 @@ export function RegisterForm() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password">Password</Label>
+            <button
+              type="button"
+              aria-label={showPasswords ? "Hide passwords" : "Show passwords"}
+              aria-pressed={showPasswords}
+              onClick={() => setShowPasswords((visible) => !visible)}
+              className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+            >
+              {showPasswords ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+              {showPasswords ? "Hide" : "Show"}
+            </button>
+          </div>
           <Input
             id="password"
             name="password"
-            type="password"
+            type={showPasswords ? "text" : "password"}
             autoComplete="new-password"
             required
             aria-invalid={Boolean(state.fieldErrors?.password)}
@@ -76,7 +90,7 @@ export function RegisterForm() {
           <Input
             id="confirmPassword"
             name="confirmPassword"
-            type="password"
+            type={showPasswords ? "text" : "password"}
             autoComplete="new-password"
             required
             aria-invalid={Boolean(state.fieldErrors?.confirmPassword)}

@@ -4,6 +4,13 @@ All notable changes to Meridian are documented here. Format follows [Keep a Chan
 
 ## [Unreleased]
 
+### Changed
+
+- Refreshed the storefront with config-driven semantic theme aliases, editorial typography,
+  responsive home sections, a scroll-aware header with mobile/search/cart dialogs, revised
+  catalogue/product/cart/auth UI, and accessible loading/empty states. See
+  `docs/features/ui-design-system.md`.
+
 ### Added
 
 - Storefront copy configuration for the announcement bar, home hero, home sections and footer in `src/config/site.config.ts`; hero/editorial imagery and alt text are configurable too.
@@ -18,7 +25,7 @@ All notable changes to Meridian are documented here. Format follows [Keep a Chan
 ### Fixed
 
 - Removed the Next.js 16 dev overlay warning `Detected scroll-behavior: smooth on the <html> element` by declaring `data-scroll-behavior="smooth"` on the root `<html>` element.
-- Removed the product-page LCP dev warnings by preloading primary catalogue images and eagerly loading gallery thumbnails; migrated the deprecated `next/image` `priority` prop to `preload`.
+- Load the active product-gallery image eagerly and defer offscreen thumbnails; keep preloads limited to stable LCP candidates and avoid unused responsive-image preloads.
 
 ## [0.1.0] - 2026-11-13
 

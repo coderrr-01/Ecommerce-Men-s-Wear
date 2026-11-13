@@ -16,6 +16,7 @@ Foundation complete. Storefront browsing and authentication work end to end; car
 | Seed            | Done              | 5 categories, 15 products, users, coupons, banner, settings; production guard    |
 | Auth            | Done              | Credentials, register, logout, JWT roles, DB-backed guards, proxy                |
 | UI shell        | Done              | Primitives, header/footer, account/admin layouts, policy pages                   |
+| Storefront UI   | Done              | Premium responsive redesign, semantic theme tokens, editorial typography        |
 | Catalogue       | Done              | Home, shop filters/sort/pagination, product detail                               |
 | Cart            | Done (signed-in)  | Transactional merges, stock checks, totals, header count                         |
 | Admin dashboard | Done (read-only)  | Product/order/customer/low-stock metrics                                         |
@@ -23,8 +24,8 @@ Foundation complete. Storefront browsing and authentication work end to end; car
 | Providers       | Done (interfaces) | Mock/Razorpay, Cloudinary, console/Resend, console SMS                           |
 | Tests           | Done              | 5 files, 27 passing unit tests                                                   |
 | Quality gates   | Passing           | lint, typecheck, test, build                                                     |
-| Dev overlay     | Fixed             | Smooth-scroll and product LCP image warnings resolved                            |
-| Documentation   | Done              | README, setup, architecture, DB, API, features, ADRs, changelog, agent guide     |
+| Dev overlay     | Verified          | Fresh product-page load has no LCP or unused-preload warnings                    |
+| Documentation   | Done              | Includes storefront design system, progress, and dated changelog                 |
 
 ## Verification
 
@@ -35,18 +36,22 @@ pnpm lint       -> pass
 pnpm typecheck  -> pass
 pnpm test       -> 5 files, 27 tests pass
 pnpm build      -> pass (Next.js 16.4.6, Turbopack)
-pnpm db:seed    -> pass (5 categories, 15 products, 172 variants, 30 images)
 ```
 
-Dev overlay: clean headless Chrome loads of `/`, `/shop`, `/products/classic-oxford-shirt`, `/login` and `/policies/shipping` produced no application warnings or errors. The previous `Detected scroll-behavior: smooth on the <html> element` and product LCP image warnings are gone.
-
-Seed verification: local PostgreSQL was reachable; the seeded `StoreSettings` row matches `site.config.ts` for brand, contact, currency, tax, free-shipping threshold, shipping fees, COD and return window.
+Storefront UI browser checks: `/`, `/shop`, `/products/classic-oxford-shirt`, `/login`,
+`/register`, `/cart` and `/account` were checked at 360, 768, 1024 and 1440px with no horizontal
+overflow. Mobile menu/search, filters, cart drawer, password visibility, product image zoom and
+size-guide dialog were exercised. A fresh product-page load has no LCP or unused-preload warnings.
 
 Not verified locally:
 
-- `pnpm db:migrate` (the existing local database was already migrated).
+- Database and seed verification were not part of this UI-only change.
 - Runtime pages with real data, auth login, add-to-cart and admin metrics against a live database.
 - Provider calls to Razorpay, Cloudinary or Resend (no credentials).
+
+Storefront UI gaps: newsletter enrollment, wishlist persistence, alternate product-card imagery and
+quick-add are not backed by existing contracts. The cart drawer remains a count/route summary,
+exact product measurements are unavailable, and checkout remains disabled.
 
 ## Known issues and risks
 

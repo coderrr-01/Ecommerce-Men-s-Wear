@@ -25,9 +25,10 @@ Server-persisted cart for signed-in users. Guest carts are represented in the sc
 - `src/features/cart/services/cart.service.ts` — ownership checks, mapping, totals.
 - `src/features/cart/utils.ts` — pure totals.
 - `src/features/cart/actions/cart.actions.ts` — add/update/remove.
-- `src/features/cart/components/*` — summary, quantity form, remove button.
+- `src/features/cart/components/*` — quantity stepper and cart presentation.
 - `src/app/(store)/cart/page.tsx` — cart page.
-- `src/components/layout/site-header.tsx` — item-count badge via `getCartItemCount`.
+- `src/components/layout/site-header.tsx` — item-count lookup.
+- `src/components/layout/cart-drawer.tsx` — lightweight count/route drawer; item details stay on `/cart`.
 
 ## Error handling
 

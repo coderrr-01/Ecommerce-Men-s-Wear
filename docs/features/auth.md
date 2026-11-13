@@ -39,6 +39,8 @@
 - `src/features/auth/actions/auth.actions.ts` — login/register/logout.
 - `src/features/auth/schemas/auth.schemas.ts` — Zod validation.
 - `src/features/auth/components/*` — forms with `useActionState`.
+- The auth route-group layout uses the configured hero image and a responsive split presentation;
+  login and registration include keyboard-accessible password visibility controls.
 
 ## Known gaps
 

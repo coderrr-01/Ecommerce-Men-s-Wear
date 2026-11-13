@@ -2,8 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { removeCartItemAction, updateCartItemAction } from "@/features/cart/actions/cart.actions";
+import { removeCartItemAction } from "@/features/cart/actions/cart.actions";
+import { CartQuantityStepper } from "@/features/cart/components/cart-quantity-stepper";
 import { getCart } from "@/features/cart/services/cart.service";
 import { requireUser } from "@/features/auth/services/session.service";
 import { siteConfig } from "@/config/site.config";
@@ -92,21 +92,12 @@ export default async function CartPage({ searchParams }: CartPageProps) {
                     ) : null}
 
                     <div className="flex flex-wrap items-center gap-3 pt-1">
-                      <form action={updateCartItemAction} className="flex items-center gap-2">
-                        <input type="hidden" name="itemId" value={item.id} />
-                        <Input
-                          type="number"
-                          name="quantity"
-                          min={1}
-                          max={Math.min(10, Math.max(1, item.stock))}
-                          defaultValue={item.quantity}
-                          aria-label={`Quantity for ${item.name}`}
-                          className="h-9 w-16 text-center"
-                        />
-                        <Button type="submit" variant="outline" size="sm">
-                          Update
-                        </Button>
-                      </form>
+                      <CartQuantityStepper
+                        itemId={item.id}
+                        quantity={item.quantity}
+                        maxQuantity={Math.min(10, Math.max(1, item.stock))}
+                        productName={item.name}
+                      />
 
                       <form action={removeCartItemAction}>
                         <input type="hidden" name="itemId" value={item.id} />
@@ -149,9 +140,32 @@ export default async function CartPage({ searchParams }: CartPageProps) {
             </dl>
 
             {cart.freeShippingRemaining > 0 ? (
-              <p className="mt-4 rounded-md bg-secondary/60 px-3 py-2 text-xs text-muted-foreground">
-                Add {formatPrice(cart.freeShippingRemaining)} more for free shipping.
-              </p>
+              <div className="mt-5 space-y-2">
+                <p className="text-xs text-muted-foreground">
+                  Add {formatPrice(cart.freeShippingRemaining)} more for free shipping.
+                </p>
+                <div
+                  role="progressbar"
+                  aria-label="Progress toward free shipping"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={Math.min(
+                    100,
+                    Math.round((cart.subtotal / siteConfig.shipping.freeShippingThreshold) * 100),
+                  )}
+                  className="h-1 overflow-hidden bg-secondary"
+                >
+                  <div
+                    className="h-full bg-accent transition-[width] duration-500"
+                    style={{
+                      width: `${Math.min(
+                        100,
+                        (cart.subtotal / siteConfig.shipping.freeShippingThreshold) * 100,
+                      )}%`,
+                    }}
+                  />
+                </div>
+              </div>
             ) : (
               <p className="mt-4 rounded-md bg-accent/5 px-3 py-2 text-xs text-accent">
                 Your order qualifies for free shipping.

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { logoutAction } from "@/features/auth/actions/auth.actions";
 import { requireUser } from "@/features/auth/services/session.service";
 import { accountNav } from "@/config/navigation";
+import { fontVariables } from "@/components/shared/fonts";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,9 @@ export default async function AccountLayout({ children }: { children: React.Reac
   const user = await requireUser("/account");
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
+    <div
+      className={`${fontVariables} mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14`}
+    >
       <div className="mb-8 flex flex-col justify-between gap-4 border-b border-border pb-6 sm:flex-row sm:items-end">
         <div>
           <p className="text-[11px] tracking-[0.2em] text-muted-foreground uppercase">Account</p>
