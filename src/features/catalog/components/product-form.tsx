@@ -105,7 +105,7 @@ export function ProductForm({
     }
     toast.success(product ? "Product updated." : "Product created.");
     if (!product) {
-      router.push(`/admin/products/${response.data.id}/edit?tab=images`);
+      router.push(`/admin/products/${response.data.id}/edit#images`);
     } else {
       router.refresh();
     }
@@ -130,7 +130,7 @@ export function ProductForm({
         <div className="sticky bottom-0 z-10 flex flex-wrap items-center justify-between gap-3 border-t border-border bg-background/95 px-1 py-4 backdrop-blur">
           {product ? (
             <Button asChild variant="outline">
-              <Link href={`/admin/products/${product.id}/edit?tab=images`}>
+              <Link href={`/admin/products/${product.id}/edit#images`}>
                 Manage images ({product.imageCount})
               </Link>
             </Button>

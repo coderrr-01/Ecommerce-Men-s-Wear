@@ -8,10 +8,15 @@ export type { StorageProvider, UploadInput, UploadResult } from "./types";
 
 let cachedProvider: StorageProvider | undefined;
 
+export function isStorageConfigured(): boolean {
+  return Boolean(env.CLOUDINARY_CLOUD_NAME && env.CLOUDINARY_API_KEY && env.CLOUDINARY_API_SECRET);
+}
+
 export function getStorageProvider(): StorageProvider {
   if (cachedProvider) return cachedProvider;
 
-  if (!env.CLOUDINARY_CLOUD_NAME || !env.CLOUDINARY_API_KEY || !env.CLOUDINARY_API_SECRET) {
+  const { CLOUDINARY_CLOUD_NAME: cloudName, CLOUDINARY_API_KEY: apiKey, CLOUDINARY_API_SECRET: apiSecret } = env;
+  if (!cloudName || !apiKey || !apiSecret) {
     throw new ProviderError(
       "Cloudinary",
       "CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET are required",
@@ -19,9 +24,9 @@ export function getStorageProvider(): StorageProvider {
   }
 
   cachedProvider = new CloudinaryStorageProvider({
-    cloudName: env.CLOUDINARY_CLOUD_NAME,
-    apiKey: env.CLOUDINARY_API_KEY,
-    apiSecret: env.CLOUDINARY_API_SECRET,
+    cloudName,
+    apiKey,
+    apiSecret,
   });
 
   return cachedProvider;
