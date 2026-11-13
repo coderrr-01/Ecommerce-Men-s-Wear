@@ -17,6 +17,13 @@ enum Gender {
   MEN
 }
 
+enum ProductSizeType {
+  TOPS
+  BOTTOMS
+  FOOTWEAR
+  FREE_SIZE
+}
+
 enum OrderStatus {
   PENDING
   CONFIRMED
@@ -73,11 +80,12 @@ model User {
   updatedAt     DateTime  @updatedAt
   deletedAt     DateTime?
 
-  addresses Address[]
-  carts     Cart[]
-  orders    Order[]
-  reviews   Review[]
-  wishlist  Wishlist[]
+  addresses      Address[]
+  carts          Cart[]
+  orders         Order[]
+  reviews        Review[]
+  wishlist       Wishlist[]
+  stockMovements StockMovement[]
 
   @@index([role])
   @@index([deletedAt])
@@ -135,25 +143,28 @@ model Category {
 }
 
 model Product {
-  id               String    @id @default(cuid())
+  id               String          @id @default(cuid())
   name             String
-  slug             String    @unique
+  slug             String          @unique
   description      String
   shortDescription String?
   brand            String?
   fabric           String?
   fit              String?
   occasion         String?
-  gender           Gender    @default(MEN)
+  careInstructions String?
+  sizeType         ProductSizeType @default(TOPS)
+  gender           Gender          @default(MEN)
   categoryId       String
-  basePrice        Int       @default(0)
-  isActive         Boolean   @default(true)
-  isFeatured       Boolean   @default(false)
+  basePrice        Int             @default(0)
+  isActive         Boolean         @default(true)
+  isFeatured       Boolean         @default(false)
+  isNewArrival     Boolean         @default(false)
   seoTitle         String?
   seoDescription   String?
   seoKeywords      String[]
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
   deletedAt        DateTime?
 
   category     Category         @relation(fields: [categoryId], references: [id], onDelete: Restrict)
@@ -186,14 +197,31 @@ model ProductVariant {
   updatedAt      DateTime  @updatedAt
   deletedAt      DateTime?
 
-  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
-  cartItems  CartItem[]
-  orderItems OrderItem[]
+  product        Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  cartItems      CartItem[]
+  orderItems     OrderItem[]
+  stockMovements StockMovement[]
 
   @@unique([productId, size, color])
   @@index([productId, isActive, deletedAt])
   @@index([stock])
   @@map("product_variants")
+}
+
+model StockMovement {
+  id        String   @id @default(cuid())
+  variantId String
+  delta     Int
+  reason    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  user    User           @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([variantId, createdAt])
+  @@index([userId, createdAt])
+  @@map("stock_movements")
 }
 
 model ProductImage {

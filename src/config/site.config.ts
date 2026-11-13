@@ -140,6 +140,10 @@ export const siteConfig = {
     returnsWindowDays: 14,
   },
 
+  inventory: {
+    lowStockThreshold: 5,
+  },
+
   tax: {
     label: "GST",
     rateBps: 500,

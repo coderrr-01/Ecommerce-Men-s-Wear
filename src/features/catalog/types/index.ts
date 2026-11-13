@@ -1,4 +1,5 @@
 import type { StorefrontSort } from "@/config/constants";
+import type { ProductFormInput } from "@/features/catalog/schemas/product.schema";
 
 export type { StorefrontSort };
 
@@ -31,6 +32,23 @@ export interface AdminCategoryRow {
   productCount: number;
   childCount: number;
 }
+
+export interface AdminProductRow {
+  id: string;
+  name: string;
+  slug: string;
+  basePrice: number;
+  isActive: boolean;
+  isFeatured: boolean;
+  isNewArrival: boolean;
+  createdAt: Date;
+  category: { name: string };
+  variantCount: number;
+  imageCount: number;
+  totalStock: number;
+}
+
+export type AdminProductFormData = ProductFormInput & { imageCount: number };
 
 export interface ProductCardData {
   id: string;
