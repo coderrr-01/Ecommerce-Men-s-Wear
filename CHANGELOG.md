@@ -6,9 +6,9 @@ All notable changes to Diamond Selection are documented here. Format follows [Ke
 
 ### Added
 
-- Added a first-visit, config-driven home intro with a responsive product-card reveal, wordmark,
-  optional counter, reduced-motion fade and a one-day replay interval. It does not run on other
-  routes; `?intro=1` forces a replay.
+- Added a config-driven home intro that plays on each home visit, with a responsive product-card
+  reveal, wordmark, optional counter and reduced-motion fade. It does not run on other routes and
+  no query parameter is needed.
 - Added a CSS-only pre-hydration guard and timeout fallback, image/font readiness check, and
   scroll-lock cleanup. The home hero remains independently responsible for its LCP image.
 - Slowed the intro sequence to about 4.5 seconds, eased the staggered reveals, and faded out the
@@ -19,8 +19,8 @@ All notable changes to Diamond Selection are documented here. Format follows [Ke
 ### Verification
 
 - `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm build` pass.
-- Browser-checked forced replay at 1440px and 390px, reduced-motion fade, second-visit skip,
-  non-home route exclusion, full-viewport overlay bounds and scroll-lock cleanup. The intro had no
+- Browser-checked automatic home playback at 1440px and 390px, reduced-motion fade,
+  repeat-visit playback, non-home route exclusion, full-viewport overlay bounds and scroll-lock cleanup. The intro had no
   console errors; the updated wordmark sizes and seed-line fade were also checked in the production
   browser. Reduced-motion navigation surfaced an existing `HomeHero` Motion hydration warning,
   outside this intro-only scope. No database changes were made.

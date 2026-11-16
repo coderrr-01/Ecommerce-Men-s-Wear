@@ -29,7 +29,6 @@ export const siteConfig = {
     brandWord: "DIAMOND SELECTION",
     counterEnabled: true,
     rotationRangeDeg: 10,
-    playOnceHours: 24,
     images: [
       {
         src: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=720&q=75",

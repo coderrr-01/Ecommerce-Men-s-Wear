@@ -9,7 +9,6 @@ import { siteConfig } from "@/config/site.config";
 
 import "./intro-preloader.css";
 
-const storageKey = "diamond-selection:intro:last-played";
 const pendingClass = "ipl-pending";
 const runningClass = "ipl-running";
 const scrollLockClass = "ipl-scroll-locked";
@@ -28,7 +27,7 @@ const idleSnapshot: IntroSnapshot = { active: false, phase: "preparing", counter
 const pendingSnapshot: IntroSnapshot = { active: true, phase: "preparing", counter: 0 };
 let introSnapshot = idleSnapshot;
 
-const guardScript = `(()=>{var e=${siteConfig.intro.enabled};if(!e||location.pathname!=="/")return;var f=new URLSearchParams(location.search).get("intro")==="1";var p=f;if(!p){try{var v=localStorage.getItem("${storageKey}");var t=Number(v);p=v===null||!Number.isFinite(t)||Date.now()-t>=${siteConfig.intro.playOnceHours * 60 * 60 * 1000};}catch{return;}}if(p){var s=document.createElement("style");s.dataset.iplGuard="";s.textContent='html{overflow:hidden}html::before{position:fixed;z-index:2147483646;inset:0;background:var(--foreground);content:"";pointer-events:auto;touch-action:none;animation:ipl-pending-fade ${siteConfig.intro.durations.failsafeMs}ms ease-out forwards}';document.head.appendChild(s);setTimeout(function(){s.remove()},${siteConfig.intro.durations.failsafeMs});}})();`;
+const guardScript = `(()=>{if(!${siteConfig.intro.enabled}||location.pathname!=="/")return;var s=document.createElement("style");s.dataset.iplGuard="";s.textContent='html{overflow:hidden}html::before{position:fixed;z-index:2147483646;inset:0;background:var(--foreground);content:"";pointer-events:auto;touch-action:none;animation:ipl-pending-fade ${siteConfig.intro.durations.failsafeMs}ms ease-out forwards}';document.head.appendChild(s);setTimeout(function(){s.remove()},${siteConfig.intro.durations.failsafeMs});})();`;
 
 function subscribe(callback: () => void) {
   subscribers.add(callback);
@@ -59,23 +58,6 @@ function updateIntroSnapshot(update: Partial<IntroSnapshot>) {
   introSnapshot = { ...introSnapshot, ...update };
   introIsActive = introSnapshot.active;
   notifyIntroSubscribers();
-}
-
-function shouldPlayIntro(force: boolean) {
-  if (!siteConfig.intro.enabled) return false;
-  if (force) return true;
-
-  try {
-    const lastPlayed = window.localStorage.getItem(storageKey);
-    const timestamp = Number(lastPlayed);
-    return (
-      lastPlayed === null ||
-      !Number.isFinite(timestamp) ||
-      Date.now() - timestamp >= siteConfig.intro.playOnceHours * 60 * 60 * 1000
-    );
-  } catch {
-    return false;
-  }
 }
 
 function wait(milliseconds: number, signal: AbortSignal) {
@@ -165,7 +147,6 @@ export function IntroPreloader() {
     counter,
   } = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const controllerRef = useRef<AbortController | null>(null);
-  const forcedRef = useRef(false);
   const scrollPositionRef = useRef<{ x: number; y: number } | null>(null);
   const failsafeTimerRef = useRef<number | null>(null);
 
@@ -191,15 +172,10 @@ export function IntroPreloader() {
       return;
     }
 
-    const force = new URLSearchParams(window.location.search).get("intro") === "1";
-    const pending =
-      document.documentElement.classList.contains(pendingClass) ||
-      Boolean(document.querySelector("style[data-ipl-guard]"));
-    if (!pending && !shouldPlayIntro(force)) return;
+    if (!siteConfig.intro.enabled) return;
 
     const controller = new AbortController();
     controllerRef.current = controller;
-    forcedRef.current = force;
     scrollPositionRef.current = { x: window.scrollX, y: window.scrollY };
     const html = document.documentElement;
     html.style.setProperty("--ipl-failsafe-duration", `${siteConfig.intro.durations.failsafeMs}ms`);
@@ -260,20 +236,6 @@ export function IntroPreloader() {
             await wait(siteConfig.intro.durations.reducedMotionMs, signal);
             return;
           }
-        }
-
-        let timestampStored = false;
-        try {
-          window.localStorage.setItem(storageKey, String(Date.now()));
-          timestampStored = true;
-        } catch {
-          timestampStored = false;
-        }
-
-        if (!timestampStored && !forcedRef.current) {
-          updateIntroSnapshot({ phase: "reduced" });
-          await wait(siteConfig.intro.durations.reducedMotionMs, signal);
-          return;
         }
 
         const html = document.documentElement;

@@ -36,8 +36,8 @@ place. Checkout remains intentionally disabled.
 Intro preloader changes:
 
 - `pnpm lint`, `pnpm typecheck`, `pnpm test` (12 files, 48 tests) and `pnpm build` pass.
-- Browser verification passed at 1440px and 390px for `?intro=1`, reduced-motion fade, repeat-visit
-  skip, non-home route exclusion, full-viewport overlay sizing, no horizontal overflow and scroll
+- Browser verification passed at 1440px and 390px for automatic direct-home playback, reduced-motion
+  fade, repeat-visit playback, non-home route exclusion, full-viewport overlay sizing, no horizontal overflow and scroll
   cleanup. The slowed 4.5-second sequence was inspected in production at 1440px and 390px; the
   center line was transparent by the wordmark reveal. The intro had no console errors. During
   reduced-motion navigation, the existing `HomeHero` motion elements produced a hydration warning;

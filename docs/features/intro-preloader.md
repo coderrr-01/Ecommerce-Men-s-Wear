@@ -7,11 +7,11 @@ added.
 
 ## Behavior
 
-- The intro runs on the first eligible home visit, then skips until its configured replay interval
-  expires. Add `?intro=1` to the home URL to force a replay.
+- The intro plays automatically on every direct visit to the home route (`/`); no query parameter
+  or localStorage state is required.
 - It does not run on product, cart, account, auth, or admin routes.
-- Before hydration, a tiny inline guard checks the route and local timestamp to avoid flashing the
-  page through. Intro image requests use low fetch priority; fonts and images have a three-second
+- Before hydration, a tiny inline guard checks the route to avoid flashing the page through. Intro
+  image requests use low fetch priority; fonts and images have a three-second
   readiness limit. A timeout or unavailable asset skips the full sequence and uses a short fade.
 - Scroll is locked only while the overlay is active and is restored on completion or unmount. The
   intro overlay is removed from the DOM when finished.
@@ -41,7 +41,6 @@ the component or stylesheet: they use the semantic CSS variables generated from 
 | `durations.reducedMotionMs`                   | 300ms               | Reduced-motion / skipped-asset fade                          |
 | `durations.preloadTimeoutMs`                  | 3000ms              | Maximum wait for fonts and intro images                      |
 | `durations.failsafeMs`                        | 5500ms              | CSS guard fallback for an interrupted client start           |
-| `playOnceHours`                               | 24                  | Time before the normal first-visit intro can replay          |
 | `rotationRangeDeg`                            | 10                  | Card rotation range, from -10° to +10°                       |
 | `counterEnabled`                              | `true`              | Enables or disables the 000–100 counter                      |
 
@@ -52,12 +51,11 @@ for foreground, background, surface and accent colors.
 ## Troubleshooting
 
 - **Overlay looks stuck:** wait for the configured failsafe, then reload. Confirm the browser can
-  load all configured image URLs and that `intro.enabled` is true. `?intro=1` bypasses the normal
-  timestamp check for testing.
+  load all configured image URLs and that `intro.enabled` is true.
 - **Scroll remains locked:** a normal finish, route change, or unmount removes the lock. Reloading
   clears any stale document state; the CSS failsafe also releases the initial guard if startup is
   interrupted.
 - **Fonts arrive late:** the preloader waits no longer than `preloadTimeoutMs`; it skips the full
   animation if assets are not ready. The site remains available and the home hero loads independently.
-- **Intro does not play again:** clear `diamond-selection:intro:last-played` in localStorage or use
-  `?intro=1`. A forced replay still only applies on `/`.
+- **Intro does not play:** it only runs on `/`; confirm the intro is enabled and load the homepage
+  directly.
