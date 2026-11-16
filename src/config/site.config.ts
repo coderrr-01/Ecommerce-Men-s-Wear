@@ -3,16 +3,16 @@
  * Components must read from this config (or the database for admin overrides)
  * instead of hardcoding text, colours, contact details or shipping rules.
  */
-const brandName = "Meridian";
-const brandShortName = "Meridian";
+const brandName = "Diamond Selection";
+const brandShortName = "Diamond Selection";
 
 export const siteConfig = {
   name: brandName,
   shortName: brandShortName,
-  legalName: "Meridian Menswear Pvt. Ltd.",
-  tagline: "Modern menswear, made to last.",
+  legalName: "Diamond Selection",
+  tagline: "Style that shines.",
   description:
-    "Considered shirts, trousers and outerwear for men. Honest fabrics, precise fits and timeless design.",
+    "Considered menswear for men. Distinctive pieces, confident fits and everyday comfort.",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   locale: "en-IN",
   currency: "INR",
@@ -21,53 +21,52 @@ export const siteConfig = {
   timezone: "Asia/Kolkata",
 
   logo: {
-    wordmark: "MERIDIAN",
-    mark: "M",
+    wordmark: brandName.toUpperCase(),
   },
 
   theme: {
-    background: "#fbfaf8",
-    foreground: "#1c1917",
+    background: "#f7f9fc",
+    foreground: "#101827",
     card: "#ffffff",
-    cardForeground: "#1c1917",
+    cardForeground: "#101827",
     popover: "#ffffff",
-    popoverForeground: "#1c1917",
-    primary: "#111827",
-    primaryForeground: "#fafaf9",
-    secondary: "#f0ece5",
-    secondaryForeground: "#1c1917",
-    muted: "#f1eee9",
-    mutedForeground: "#78716c",
-    accent: "#9a6b2f",
-    accentForeground: "#fffbeb",
+    popoverForeground: "#101827",
+    primary: "#101827",
+    primaryForeground: "#f7f9fc",
+    secondary: "#edf1f6",
+    secondaryForeground: "#182334",
+    muted: "#edf1f6",
+    mutedForeground: "#4f5d6d",
+    accent: "#79571f",
+    accentForeground: "#ffffff",
     destructive: "#b91c1c",
     destructiveForeground: "#fef2f2",
-    border: "#e5e0d8",
-    input: "#ddd7cd",
-    ring: "#9a6b2f",
+    border: "#d7dde5",
+    input: "#cfd6e0",
+    ring: "#79571f",
     radius: "0.5rem",
   },
 
   contact: {
-    email: "care@meridian.example",
-    phone: "+91 98765 43210",
-    whatsapp: "+919876543210",
+    email: "care@diamondselection.example",
+    phone: "+91 00000 00000",
+    whatsapp: "+910000000000",
     hours: "Mon–Sat, 10:00–19:00 IST",
   },
 
   address: {
-    line1: "12 Linking Road",
-    line2: "Bandra West",
-    city: "Mumbai",
-    state: "Maharashtra",
-    postalCode: "400050",
+    line1: "Address line 1",
+    line2: "Address line 2",
+    city: "City",
+    state: "State",
+    postalCode: "000000",
     country: "India",
   },
 
   social: [
-    { label: "Instagram", href: "https://instagram.com" },
-    { label: "Facebook", href: "https://facebook.com" },
-    { label: "Pinterest", href: "https://pinterest.com" },
+    { label: "Instagram", href: "https://instagram.com/diamondselection" },
+    { label: "Facebook", href: "https://facebook.com/diamondselection" },
+    { label: "Pinterest", href: "https://pinterest.com/diamondselection" },
   ],
 
   announcement: {
@@ -177,9 +176,9 @@ export const siteConfig = {
   },
 
   seed: {
-    adminEmail: "admin@meridian.example",
+    adminEmail: "admin@diamondselection.example",
     adminName: `${brandName} Admin`,
-    customerEmail: "customer@meridian.example",
+    customerEmail: "customer@diamondselection.example",
     customerName: "Demo Customer",
   },
 } as const;

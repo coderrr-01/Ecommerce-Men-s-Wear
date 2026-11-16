@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 
 import { themeCss } from "@/config/theme";
 import { siteConfig } from "@/config/site.config";
+import { MotionProvider } from "@/components/shared/motion-provider";
 
 import "./globals.css";
 
@@ -45,7 +46,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         <style dangerouslySetInnerHTML={{ __html: themeCss }} />
       </head>
-      <body>{children}</body>
+      <body>
+        <MotionProvider>{children}</MotionProvider>
+      </body>
     </html>
   );
 }
