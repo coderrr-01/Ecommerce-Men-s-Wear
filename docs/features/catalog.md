@@ -14,11 +14,17 @@ All catalogue pages are `force-dynamic` because the header reads the session/car
 
 - The home page uses a full-bleed configured hero, category tiles, trust-benefit strip, configurable
   shipping promotion, horizontally scrollable featured products and an editorial grid.
-- Shop filters retain server-rendered query links; mobile controls open as a bottom sheet and active
-  search/category/size values can be cleared independently.
+- Shop filters use existing catalog query contracts for category, size, sort and text search; a local
+  price slider applies only to the currently loaded page, and colour filters remain disabled until
+  variant data is part of the listing DTO.
 - Product imagery supports thumbnail selection, mobile swipe and a native image zoom dialog.
   Purchase controls keep the existing server action and include a mobile sticky add-to-bag bar.
-- Shop loading and storefront not-found UI are route-group components.
+- Product cards expose a quick-view detail link and guest wishlist control. Recently viewed products
+  are stored in localStorage. Search offers debounced category suggestions and recent terms.
+- The cart drawer renders the signed-in cart snapshot, shipping threshold progress and line items;
+  quantity changes/removals remain on the full cart page.
+- Shop loading and storefront not-found UI are route-group components. PWA metadata and a
+  theme-configured diamond icon support install prompts without offline caching.
 - See `ui-design-system.md` for tokens, typography, motion and rebranding.
 
 ## Data flow
@@ -62,6 +68,9 @@ roles, action contracts and audit behavior.
 - `sort` — `newest`, `price-asc`, `price-desc`, `name-asc`, `name-desc`.
 - `page` — 1-based page.
 
+The listing's optional price slider filters only the products loaded on the current page; it does
+not claim a database-wide price facet. Available filters are category, size, search and sort.
+
 DEFAULTS: 12 items per page, maximum 60. Sorting by price uses `Product.basePrice`, maintained by the seed/admin writes, so it is database-sortable rather than in-memory. Query strings are built through `catalog.utils` and covered by unit tests.
 
 ## Product detail
@@ -82,17 +91,24 @@ Allowed next/image hosts are declared in `next.config.ts`:
 
 Fallback asset: `public/placeholder.svg`.
 
-Above-the-fold primary images use `preload`, and gallery thumbnails use `loading="eager"` so Next.js does not emit LCP dev warnings. The `priority` prop is deprecated in Next.js 16.
+The active product-gallery image is loaded eagerly with responsive `sizes`; offscreen thumbnails
+remain deferred. The `priority` prop is deprecated in Next.js 16.
 
 ## Seed catalogue
 
-`prisma/seed-data.ts` provides 5 categories and 15 menswear products with size/colour variants, images and size guides. Product brand values and store settings come from `src/config/site.config.ts`. Product `basePrice` is derived from the lowest/first variant price so list sorting matches displayed pricing.
+`prisma/seed-data.ts` provides 13 categories (10 top-level and 3 Winter Wear children) and 30
+menswear products with size/colour variants, images and size guides. Tops use S–XXL, bottoms use
+waist sizes 28–42, and socks/gloves/topis/sarong use `Free Size`. Product brand values and store
+settings come from `src/config/site.config.ts`. Product `basePrice` is derived from the lowest/first
+variant price so list sorting matches displayed pricing. Run `pnpm db:reset` on a disposable
+development database to apply the updated demo catalog.
 
 ## Known gaps
 
-- No faceted size/colour/price filters yet.
+- No database-backed price facet or colour filter yet; the price control is current-page-only.
 - No search index or fuzzy search; current search uses `contains` with `mode: "insensitive"`.
 - No category landing pages beyond `/shop?category=`.
 - No stock reservation while browsing; stock is checked when adding/updating the cart.
-- Product cards expose one image and no variants, so alternate-image hover, quick-add and card-level wishlist actions await a richer DTO and implemented wishlist action.
-- Per-product garment measurements are not part of the detail DTO; the size guide explicitly directs customers to contact support.
+- Product cards expose one image and no variants, so quick view routes to the detail page instead of selecting options or adding directly to cart.
+- Per-product garment measurements are not part of the detail DTO; the size helper is only a general suggestion, and the guide directs customers to contact support.
+- Guest wishlist and recently viewed items are local to the browser and do not sync with accounts.

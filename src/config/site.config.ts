@@ -156,7 +156,7 @@ export const siteConfig = {
       title: "Layer up. Step out.",
       body: "Easy layers and thoughtful essentials made for cooler days.",
       imageUrl:
-        "https://images.unsplash.com/photo-1544022613-e87ca75a784a?auto=format&fit=crop&w=1800&q=85",
+        "https://images.unsplash.com/photo-1544022613-e87ca75a784a?auto=format&fit=crop&w=1500&q=85",
       imageAlt: "Layered winter menswear in neutral shades",
       cta: { label: "Explore winter wear", href: "/shop?category=winter-wear" },
     },

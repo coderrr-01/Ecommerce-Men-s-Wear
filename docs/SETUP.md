@@ -41,7 +41,7 @@ Edit `src/config/site.config.ts` before launching a real shop. Nothing brand-fac
 
 | Area               | Fields to edit                                                                                                                              |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| Identity           | `name`, `shortName`, `legalName`, `tagline`, `description`, `logo.wordmark`, `logo.mark`                                                    |
+| Identity           | `name`, `shortName`, `legalName`, `tagline`, `description`, `logo.wordmark`                                                                 |
 | Contact            | `contact.email`, `contact.phone`, `contact.whatsapp`, `contact.hours`                                                                       |
 | Address            | `address.line1`, `address.line2`, `address.city`, `address.state`, `address.postalCode`, `address.country`                                  |
 | Social links       | `social[]` (`label`, `href`)                                                                                                                |
@@ -60,7 +60,7 @@ Edit `src/config/site.config.ts` before launching a real shop. Nothing brand-fac
 
 Money values are integer paise: `149900` is ₹1,499.00.
 
-After changing seed-related values, run `pnpm db:seed` to refresh product brands, SEO titles and seeded accounts. `StoreSettings` is only created when absent and is not overwritten, so update it in the database (or reset a disposable database) if it already exists. `EMAIL_FROM` defaults to the configured brand and contact email when left empty.
+After changing seed-related values, run `pnpm db:seed` to refresh product brands, SEO titles and seeded accounts. The current idempotent catalog seed contains 13 categories and 30 products, including nested Winter Wear categories. `StoreSettings` is only created when absent and is not overwritten, so update it in the database (or reset a disposable database) if it already exists. `EMAIL_FROM` defaults to the configured brand and contact email when left empty.
 
 ## 3. Database
 
@@ -96,8 +96,12 @@ The seed is idempotent for catalogue content and users. It does not reset `Store
 
 Development seed accounts:
 
-- Admin: `admin@meridian.example` / `Admin@12345`
-- Customer: `customer@meridian.example` / `Customer@12345`
+- Admin: `admin@diamondselection.example` / `Admin@12345`
+- Customer: `customer@diamondselection.example` / `Customer@12345`
+
+To replace the demo catalog on a disposable development database, run `pnpm db:reset`. This resets
+the database and reseeds it, including the demo accounts; do not run it against a database whose
+data must be preserved.
 
 Production safety:
 

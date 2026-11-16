@@ -10,7 +10,7 @@ import type { ProductCardData } from "@/features/catalog/types";
 import { useQuickView } from "@/features/catalog/components/quick-view-provider";
 import { useGuestWishlist } from "@/features/wishlist/components/guest-wishlist-provider";
 import { cn, formatPrice } from "@/lib/utils";
-import { motionSpring } from "@/lib/motion";
+import { motionDuration, motionEasing, motionSpring } from "@/lib/motion";
 
 interface ProductCardProps {
   product: ProductCardData;
@@ -63,7 +63,11 @@ export function ProductCard({ product, priority = false, className }: ProductCar
             onClick={() => toggle(product)}
             whileTap={{ scale: 0.86 }}
             animate={wished ? { scale: [1, 1.28, 1] } : { scale: 1 }}
-            transition={motionSpring.snappy}
+            transition={
+              wished
+                ? { duration: motionDuration.standard, ease: motionEasing.enter }
+                : motionSpring.snappy
+            }
             className="grid size-11 place-items-center rounded-full bg-background/95 text-foreground shadow-sm"
           >
             <Heart

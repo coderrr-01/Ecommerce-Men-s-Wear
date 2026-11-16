@@ -8,6 +8,7 @@ import { getCart } from "@/features/cart/services/cart.service";
 import { requireUser } from "@/features/auth/services/session.service";
 import { siteConfig } from "@/config/site.config";
 import { formatPrice } from "@/lib/utils";
+import { ScrollReveal } from "@/components/shared/scroll-reveal";
 
 export const dynamic = "force-dynamic";
 
@@ -44,16 +45,18 @@ export default async function CartPage({ searchParams }: CartPageProps) {
       ) : null}
 
       {cart.items.length === 0 ? (
-        <div className="mt-10 flex flex-col items-center justify-center rounded-lg border border-dashed border-border px-6 py-20 text-center">
-          <h2 className="font-serif text-2xl">Your bag is empty</h2>
-          <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-            Start with the pieces you reach for most: an Oxford shirt, a heavyweight tee or a clean
-            chino.
-          </p>
-          <Button asChild className="mt-6">
-            <Link href="/shop">Shop the collection</Link>
-          </Button>
-        </div>
+        <ScrollReveal className="mt-10">
+          <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border px-6 py-20 text-center">
+            <h2 className="font-serif text-2xl">Your bag is empty</h2>
+            <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+              Start with the pieces you reach for most: an Oxford shirt, a heavyweight tee or a
+              clean chino.
+            </p>
+            <Button asChild className="mt-6">
+              <Link href="/shop">Shop the collection</Link>
+            </Button>
+          </div>
+        </ScrollReveal>
       ) : (
         <div className="mt-8 grid gap-10 lg:grid-cols-[1.6fr_1fr] lg:gap-14">
           <ul className="divide-y divide-border border-y border-border">

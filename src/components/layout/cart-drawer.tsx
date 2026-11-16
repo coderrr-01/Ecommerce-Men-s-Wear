@@ -39,6 +39,9 @@ export function CartDrawer({ cart }: { cart: CartData | null }) {
       <dialog
         ref={dialog}
         aria-label="Shopping bag"
+        onKeyDown={(event) => {
+          if (event.key === "Escape") dialog.current?.close();
+        }}
         className="cart-drawer-dialog fixed inset-y-0 right-0 m-0 h-dvh max-h-none w-[min(26rem,92vw)] border-0 bg-background p-0 text-foreground shadow-2xl backdrop:bg-foreground/40"
         onClick={(event) => {
           if (event.target === event.currentTarget) dialog.current?.close();

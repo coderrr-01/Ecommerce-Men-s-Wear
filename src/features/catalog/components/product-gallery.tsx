@@ -19,6 +19,7 @@ interface ProductGalleryProps {
 export function ProductGallery({ images, productName }: ProductGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [zoomed, setZoomed] = useState(false);
+  const [zoomOpen, setZoomOpen] = useState(false);
   const zoomDialog = useRef<HTMLDialogElement>(null);
   const touchStart = useRef<number | null>(null);
   const reducedMotion = useReducedMotion();
@@ -56,7 +57,10 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
               if (event.key === "ArrowRight") showImage(activeIndex + 1);
               if (event.key === "ArrowLeft") showImage(activeIndex - 1);
             }}
-            onClick={() => zoomDialog.current?.showModal()}
+            onClick={() => {
+              setZoomOpen(true);
+              zoomDialog.current?.showModal();
+            }}
           >
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
@@ -72,7 +76,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
                   alt={active.alt}
                   fill
                   loading="eager"
-                  sizes="(min-width: 1024px) 50vw, 100vw"
+                  sizes="(min-width: 1280px) 580px, (min-width: 1024px) calc(50vw - 60px), (min-width: 640px) calc(100vw - 48px), calc(100vw - 32px)"
                   className="object-cover transition-transform duration-500 hover:scale-[1.02]"
                 />
               </motion.div>
@@ -118,7 +122,14 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
                     : "border-transparent opacity-65 hover:opacity-100",
                 )}
               >
-                <Image src={image.url} alt="" fill sizes="80px" className="object-cover" />
+                <Image
+                  src={image.url}
+                  alt=""
+                  fill
+                  loading={index === activeIndex ? "eager" : "lazy"}
+                  sizes="80px"
+                  className="object-cover"
+                />
               </button>
             ))}
           </div>
@@ -128,8 +139,14 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
       <dialog
         ref={zoomDialog}
         aria-label={`${productName} image`}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") zoomDialog.current?.close();
+        }}
         className="fixed inset-0 m-0 h-dvh w-screen max-w-none border-0 bg-background/95 p-4 text-foreground backdrop:bg-foreground/80"
-        onClose={() => setZoomed(false)}
+        onClose={() => {
+          setZoomed(false);
+          setZoomOpen(false);
+        }}
         onClick={(event) => {
           if (event.target === event.currentTarget) zoomDialog.current?.close();
         }}
@@ -157,24 +174,27 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
             </Button>
           </div>
           <div className="relative min-h-0 flex-1">
-            <button
-              type="button"
-              aria-label={zoomed ? "Zoom out" : "Zoom in"}
-              aria-pressed={zoomed}
-              onClick={() => setZoomed((current) => !current)}
-              className="absolute inset-0 grid place-items-center overflow-hidden"
-            >
-              <Image
-                src={active.url}
-                alt={active.alt}
-                fill
-                sizes="100vw"
-                className={cn(
-                  "object-contain transition-transform duration-300",
-                  zoomed && "scale-150",
-                )}
-              />
-            </button>
+            {zoomOpen ? (
+              <button
+                type="button"
+                aria-label={zoomed ? "Zoom out" : "Zoom in"}
+                aria-pressed={zoomed}
+                onClick={() => setZoomed((current) => !current)}
+                className="absolute inset-0 grid place-items-center overflow-hidden"
+              >
+                <Image
+                  src={active.url}
+                  alt={active.alt}
+                  fill
+                  loading="eager"
+                  sizes="(min-width: 1056px) 1024px, calc(100vw - 2rem)"
+                  className={cn(
+                    "object-contain transition-transform duration-300",
+                    zoomed && "scale-150",
+                  )}
+                />
+              </button>
+            ) : null}
           </div>
         </div>
       </dialog>

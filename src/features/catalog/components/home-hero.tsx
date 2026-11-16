@@ -18,6 +18,7 @@ export function HomeHero() {
   const [hoverPaused, setHoverPaused] = useState(false);
   const [focusPaused, setFocusPaused] = useState(false);
   const [manualPaused, setManualPaused] = useState(false);
+  const [eagerSlides, setEagerSlides] = useState(() => new Set<number>([0]));
   const sectionRef = useRef<HTMLElement>(null);
   const reducedMotion = useReducedMotion();
   const { scrollYProgress } = useScroll({
@@ -29,7 +30,10 @@ export function HomeHero() {
   const paused = hoverPaused || focusPaused || manualPaused || reducedMotion !== false;
 
   const updateIndex = useCallback(() => {
-    if (emblaApi) setActiveIndex(emblaApi.selectedScrollSnap());
+    if (!emblaApi) return;
+    const index = emblaApi.selectedScrollSnap();
+    setEagerSlides((current) => new Set(current).add(index));
+    setActiveIndex(index);
   }, [emblaApi]);
 
   useEffect(() => {
@@ -81,6 +85,7 @@ export function HomeHero() {
                   src={slide.imageUrl}
                   alt={slide.imageAlt}
                   fill
+                  loading={eagerSlides.has(index) ? "eager" : "lazy"}
                   preload={index === 0}
                   sizes="100vw"
                   className="object-cover object-center"

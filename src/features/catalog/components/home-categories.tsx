@@ -36,7 +36,7 @@ export function HomeCategories({ categories }: { categories: CategoryOption[] })
             <Link
               key={category.id}
               href={`/shop?category=${category.slug}`}
-              className="group relative aspect-[4/5] overflow-hidden bg-secondary"
+              className="group relative aspect-[4/5] overflow-hidden bg-secondary transition-transform duration-300 hover:-translate-y-1 focus-visible:-translate-y-1"
             >
               <Image
                 src={category.imageUrl ?? PRODUCT_PLACEHOLDER_IMAGE}

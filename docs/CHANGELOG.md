@@ -1,5 +1,19 @@
 # Documentation changelog
 
+## 2026-11-16 — Diamond Selection storefront
+
+- Updated catalog, design-system, setup and progress documentation for the rebrand, motion rules,
+  responsive interactions, PWA metadata and 13-category/30-product seed.
+- Added `features/storefront-interactions.md` with explicit client-only persistence and unavailable
+  backend constraints.
+- Recorded local wishlist persistence in ADR 0009; no schema or API contract changed.
+- `pnpm lint`, `pnpm typecheck` and `pnpm test` pass (12 files, 48 tests). Responsive browser
+  checks covered the home, shop, product and wishlist pages plus mobile overlays and PWA endpoints.
+- `pnpm build` passes. Fixed hero-slide loading, LCP image/thumbnail state and Escape closure for
+  native storefront dialogs; switched the wishlist burst to a tween to avoid spring/keyframe
+  runtime errors. After those fixes, the hero carousel and wishlist toggle ran without console
+  warnings. The database reset and new seed verification remain intentionally unrun.
+
 ## 2026-11-13 — Admin catalog management
 
 - Documented the admin shell, categories, products/variants, Cloudinary image workflow, inventory

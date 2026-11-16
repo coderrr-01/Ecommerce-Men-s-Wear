@@ -9,7 +9,7 @@ function line(overrides: Partial<CartLine> = {}): CartLine {
     variantId: "variant_1",
     name: "Classic Oxford Shirt",
     slug: "classic-oxford-shirt",
-    sku: "MRD-001-M-BLA",
+    sku: "DIA-001-M-BLA",
     size: "M",
     color: "White",
     imageUrl: "/placeholder.svg",

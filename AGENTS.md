@@ -8,9 +8,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-# Meridian project guide
+# Diamond Selection project guide
 
-Meridian is a menswear-only e-commerce foundation in `D:\mens-wear` (package `meri-shop`). Read `README.md`, `docs/ARCHITECTURE.md` and `PROGRESS.md` before large changes. Keep the managed Next.js block above intact.
+Diamond Selection is a menswear-only e-commerce foundation in `D:\mens-wear` (package `meri-shop`). Read `README.md`, `docs/ARCHITECTURE.md` and `PROGRESS.md` before large changes. Keep the managed Next.js block above intact.
 
 ## Stack
 
@@ -90,8 +90,8 @@ UI -> server action / route -> service -> repository -> Prisma
 ## Seed and demo accounts
 
 - `pnpm db:seed` is idempotent and production-gated by `ALLOW_DEMO_SEED`.
-- Dev admin: `admin@meridian.example` / `Admin@12345`.
-- Dev customer: `customer@meridian.example` / `Customer@12345`.
+- Dev admin: `admin@diamondselection.example` / `Admin@12345`.
+- Dev customer: `customer@diamondselection.example` / `Customer@12345`.
 - Override with `SEED_*` variables; never use demo passwords in production.
 
 ## Documentation is part of the change

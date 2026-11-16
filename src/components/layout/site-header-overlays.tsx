@@ -26,6 +26,9 @@ export function MobileMenu({ groups }: { groups: NavGroup[] }) {
       <dialog
         ref={dialog}
         aria-label="Store navigation"
+        onKeyDown={(event) => {
+          if (event.key === "Escape") dialog.current?.close();
+        }}
         className="store-menu-dialog fixed inset-0 m-0 h-dvh max-h-none w-screen max-w-none border-0 bg-background p-0 text-foreground shadow-2xl backdrop:bg-foreground/45"
         onClick={(event) => {
           if (event.target === event.currentTarget) dialog.current?.close();

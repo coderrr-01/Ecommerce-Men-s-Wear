@@ -31,6 +31,9 @@ export function SizeGuide({ sizes }: { sizes: ProductVariantOption[] }) {
       <dialog
         ref={dialog}
         aria-label="Size guide"
+        onKeyDown={(event) => {
+          if (event.key === "Escape") dialog.current?.close();
+        }}
         className="fixed inset-0 m-auto w-[min(32rem,calc(100vw-2rem))] border border-border bg-background p-6 text-foreground shadow-2xl backdrop:bg-foreground/50 sm:p-8"
       >
         <div className="flex items-start justify-between gap-6">

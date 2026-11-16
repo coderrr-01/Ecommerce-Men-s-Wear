@@ -9,6 +9,10 @@ theme can override the same semantic names.
 `src/config/theme.ts` injects the configured theme from `siteConfig.theme` into `:root`.
 `src/app/globals.css` maps those variables to Tailwind colors and adds semantic aliases:
 
+The current Diamond Selection palette uses deep ink/navy, diamond white and a restrained gold
+accent. Edit `src/config/site.config.ts` only; generated storefront icons and CSS variables read
+the same config values.
+
 | Token                        | Source                                       |
 | ---------------------------- | -------------------------------------------- |
 | `background` / `foreground`  | `siteConfig.theme.background` / `foreground` |
@@ -55,20 +59,45 @@ No component-level brand palette needs updating for a theme change.
 
 ## Motion and accessibility
 
-- The home header transitions from a transparent hero state to a solid sticky state after scroll.
-- Dialogs and cart/menu drawers use short CSS transitions; product and category imagery use
-  transform-only hover zoom.
-- Home sections use the CSS view timeline where supported. `prefers-reduced-motion` disables
-  nonessential animation and smooth scrolling.
+- `src/lib/motion.ts` is the source for shared durations, easing curves, spring presets and reveal
+  variants. `MotionProvider` applies `reducedMotion="user"` globally.
+- Use tween/easing transitions for animations with more than two keyframes; spring transitions
+  support single-target or two-keyframe motion.
+- Animate opacity and transforms only. Avoid layout-affecting motion, large blurred surfaces and
+  animated shadows; use `whileInView`/IntersectionObserver reveals once per section.
+- Route transitions, hero slide changes, navigation indicators, gallery crossfades, cart drawer
+  entrance and small control feedback use the shared motion system. CSS keyframes are reserved for
+  simple marquee/skeleton effects and must honor the reduced-motion media query.
+- The home header transitions from transparent over the hero to a blurred solid surface; it hides on
+  downward scroll and returns on upward scroll. The progress bar and parallax do not change layout.
+- Touch and keyboard must expose the same actions as hover: image controls, quick view, wishlist,
+  category navigation, size selection and cart actions all have semantic buttons/links and visible
+  focus states.
+- `prefers-reduced-motion` disables parallax and nonessential movement; retain concise opacity
+  changes and make programmatic scroll behavior non-animated.
 - Keep keyboard focus visible, use native `dialog` and `details` controls, label icon-only buttons,
   preserve descriptive image alt text, and retain loading/status/error semantics.
-- Load the active product-gallery image eagerly and defer offscreen thumbnails. Preload only stable
-  LCP candidates, and set responsive `sizes` on `next/image`.
+- Load the active product-gallery image eagerly and defer inactive thumbnails. Keep a selected
+  thumbnail's loading state aligned when it shares the LCP image URL; preload only the first hero
+  slide and keep slides eager once shown. Avoid duplicate image URLs for distinct layout roles,
+  preload only stable LCP candidates, and set responsive `sizes` on `next/image`.
+
+## Responsive layout
+
+- Use a mobile-first layout and preserve 44px minimum interactive targets and safe-area insets.
+- Store pages reserve room for the mobile bottom navigation and floating controls.
+- Verify at 360, 390, 768, 1024 and 1440px before release; do not infer browser verification from
+  typecheck or build output.
+- The search overlay, menu and cart use native dialogs for Escape handling and focus management.
 
 ## Known UI constraints
 
-Wishlist persistence, newsletter enrollment, and checkout are not implemented. The product-card DTO
-currently exposes one image and no variants, so cards do not claim a second-image preview or
-quick-add. The cart drawer is a lightweight count/route summary; detailed line items and totals stay
-on the full cart page. These surfaces should be connected when their underlying feature contracts
-are available.
+- Product-card data contains one image and no variant choices. Quick view links to the product page
+  for size/colour selection; it does not offer a fabricated card-level add-to-cart action or image
+  crossfade.
+- Search suggestions come from categories and browser-local recent terms; actual product search is
+  submitted to the existing catalog listing.
+- Guest wishlist and recently viewed products use localStorage and are not account-synchronized.
+- Newsletter enrollment is disabled and marked as coming soon. Checkout remains disabled.
+- Size suggestions are a general heuristic for available lettered sizes, not a garment-measurement
+  guarantee. Numeric/free-size styles direct shoppers to contact support.

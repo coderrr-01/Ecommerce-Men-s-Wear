@@ -1,6 +1,41 @@
 # Changelog
 
-All notable changes to Meridian are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow SemVer.
+All notable changes to Diamond Selection are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow SemVer.
+
+## 2026-11-16 — Diamond Selection storefront
+
+### Added
+
+- Rebranded the storefront, configured diamond mark, shared reduced-motion presets, responsive
+  navigation, animated home sections, product quick view, guest wishlist and recently viewed strip.
+- Added debounced category/recent-search suggestions, a server-backed cart drawer, size suggestion
+  helper, WhatsApp/back-to-top/scroll-progress controls and PWA install metadata.
+- Expanded the idempotent demo catalog to 13 categories and 30 products, including nested Winter
+  Wear accessories and category-appropriate size sets.
+- Added interaction documentation and focused tests for local storage, size suggestions and seed
+  category/product requirements.
+
+### Changed
+
+- Updated setup, progress, catalog, design-system, agent and README guidance to the Diamond
+  Selection brand and current implementation constraints.
+- Recorded the localStorage wishlist decision in ADR 0009; motion and carousel dependencies are
+  recorded in ADR 0008.
+- Preloaded only the first hero slide, kept previously shown slides eager, separated the winter
+  banner image URL from its hero duplicate, and aligned the selected gallery thumbnail's loading
+  state with the LCP image.
+- Used a tween for the wishlist heart's multi-keyframe burst; kept spring transitions for
+  single-target motion and made Escape explicitly close storefront dialogs.
+
+### Verification
+
+- `pnpm lint`, `pnpm typecheck` and `pnpm test` pass (12 files, 48 tests).
+- `pnpm build` passes.
+- Browser-checked responsive layouts, mobile navigation/search, product dialogs, cart drawer,
+  wishlist empty state and toggle, all hero slides, manifest and icon. No Motion runtime or LCP
+  warnings appeared after the final fixes; the database still contains legacy catalog data.
+- PostgreSQL seed verification remains pending; do not run `pnpm db:reset` except on a disposable
+  development database.
 
 ## [Unreleased]
 

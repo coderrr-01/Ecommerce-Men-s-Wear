@@ -75,6 +75,9 @@ export function SearchOverlay() {
       <dialog
         ref={dialog}
         aria-label="Search the collection"
+        onKeyDown={(event) => {
+          if (event.key === "Escape") dialog.current?.close();
+        }}
         className="search-dialog fixed inset-x-0 top-0 m-0 w-full max-w-none border-0 bg-background p-0 text-foreground shadow-xl backdrop:bg-foreground/40"
       >
         <form

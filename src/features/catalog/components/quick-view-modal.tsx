@@ -29,6 +29,9 @@ export function QuickViewModal({
       ref={dialog}
       aria-label={`Quick view: ${product.name}`}
       onClose={onClose}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") dialog.current?.close();
+      }}
       className="quick-view-dialog fixed inset-0 m-auto max-h-[90dvh] w-[min(56rem,calc(100vw-2rem))] overflow-y-auto border border-border bg-background p-0 text-foreground shadow-2xl backdrop:bg-foreground/55"
       onClick={(event) => {
         if (event.target === event.currentTarget) dialog.current?.close();
