@@ -82,7 +82,39 @@ export const siteConfig = {
       "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=1600&q=85",
     imageAlt: "Tailored menswear in neutral tones",
     primaryCta: { label: "Shop new arrivals", href: "/shop?sort=newest" },
-    secondaryCta: { label: "Explore outerwear", href: "/shop?category=outerwear" },
+    secondaryCta: { label: "Explore shirts", href: "/shop?category=shirts" },
+    slides: [
+      {
+        eyebrow: `The ${brandName} edit`,
+        titleLines: ["Style that", "shines."],
+        description: "Everyday menswear with considered details and a confident point of view.",
+        imageUrl:
+          "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=1800&q=85",
+        imageAlt: "Modern menswear styled in deep neutral tones",
+        primaryCta: { label: "Shop new arrivals", href: "/shop?sort=newest" },
+        secondaryCta: { label: "Explore shirts", href: "/shop?category=shirts" },
+      },
+      {
+        eyebrow: "Made for every day",
+        titleLines: ["Good fit.", "Good feeling."],
+        description: "Comfort-first essentials, chosen to work hard in your wardrobe.",
+        imageUrl:
+          "https://images.unsplash.com/photo-1603252109303-2751441dd157?auto=format&fit=crop&w=1800&q=85",
+        imageAlt: "A crisp shirt styled for a contemporary menswear look",
+        primaryCta: { label: "Shop shirts", href: "/shop?category=shirts" },
+        secondaryCta: { label: "Browse everything", href: "/shop" },
+      },
+      {
+        eyebrow: "The winter collection",
+        titleLines: ["Layer up.", "Step out."],
+        description: "Easy layers and thoughtful essentials for cooler days.",
+        imageUrl:
+          "https://images.unsplash.com/photo-1544022613-e87ca75a784a?auto=format&fit=crop&w=1800&q=85",
+        imageAlt: "A winter-ready menswear look in rich neutral layers",
+        primaryCta: { label: "Explore winter wear", href: "/shop?category=winter-wear" },
+        secondaryCta: { label: "Shop all", href: "/shop" },
+      },
+    ],
   },
 
   home: {
@@ -108,6 +140,86 @@ export const siteConfig = {
       eyebrow: "Considered essentials",
       title: "Featured pieces",
       linkLabel: "Shop all",
+    },
+    newArrivals: {
+      eyebrow: "Just landed",
+      title: "New arrivals",
+      linkLabel: "Shop new in",
+    },
+    bestSellers: {
+      eyebrow: "Most-loved picks",
+      title: "Best sellers",
+      linkLabel: "See the collection",
+    },
+    winterCollection: {
+      eyebrow: "The winter collection",
+      title: "Layer up. Step out.",
+      body: "Easy layers and thoughtful essentials made for cooler days.",
+      imageUrl:
+        "https://images.unsplash.com/photo-1544022613-e87ca75a784a?auto=format&fit=crop&w=1800&q=85",
+      imageAlt: "Layered winter menswear in neutral shades",
+      cta: { label: "Explore winter wear", href: "/shop?category=winter-wear" },
+    },
+    lookbook: {
+      eyebrow: "A little inspiration",
+      title: "The lookbook",
+      items: [
+        {
+          title: "Everyday layers",
+          imageUrl:
+            "https://images.unsplash.com/photo-1516257984-b1b4d707412e?auto=format&fit=crop&w=1000&q=80",
+          imageAlt: "Casual menswear styled with easy layers",
+          href: "/shop",
+        },
+        {
+          title: "The crisp shirt",
+          imageUrl:
+            "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=1000&q=80",
+          imageAlt: "A crisp cotton shirt with tailored details",
+          href: "/shop?category=shirts",
+        },
+        {
+          title: "Off-duty ease",
+          imageUrl:
+            "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1000&q=80",
+          imageAlt: "Relaxed cotton T-shirt for an off-duty look",
+          href: "/shop?category=t-shirts",
+        },
+        {
+          title: "Made to move",
+          imageUrl:
+            "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=1000&q=80",
+          imageAlt: "Modern menswear with a clean, easy silhouette",
+          href: "/shop?category=trousers",
+        },
+      ],
+    },
+    testimonials: {
+      eyebrow: "Customer stories",
+      title: "Good words, good wear.",
+      items: [
+        {
+          quote: "Sample testimonial — replace with a verified customer story.",
+          author: "Customer story placeholder",
+          detail: "Sample content",
+        },
+        {
+          quote: "Sample testimonial — replace with a verified customer story.",
+          author: "Customer story placeholder",
+          detail: "Sample content",
+        },
+        {
+          quote: "Sample testimonial — replace with a verified customer story.",
+          author: "Customer story placeholder",
+          detail: "Sample content",
+        },
+      ],
+    },
+    newsletter: {
+      eyebrow: "A note from us",
+      title: "Good things, occasionally.",
+      description: "New arrivals, thoughtful edits and first looks at what is coming next.",
+      disabledLabel: "Newsletter sign-up coming soon",
     },
     editorial: {
       eyebrow: `The ${brandName} standard`,

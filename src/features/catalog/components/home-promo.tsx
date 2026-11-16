@@ -1,27 +1,33 @@
-import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
-
 import { siteConfig } from "@/config/site.config";
-import { formatPrice } from "@/lib/utils";
 
 export function HomePromo() {
+  const ticker = [
+    siteConfig.home.benefits.shipping.title,
+    `${siteConfig.shipping.returnsWindowDays}-day easy returns`,
+    siteConfig.home.benefits.payments.title,
+    siteConfig.tagline,
+  ];
+
   return (
-    <section className="reveal-on-scroll bg-primary text-primary-foreground">
-      <div className="mx-auto flex max-w-[1440px] flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-12">
-        <p className="text-xs tracking-[0.08em] sm:text-sm">
-          {siteConfig.announcement.shipping}{" "}
-          <span className="font-semibold">
-            {formatPrice(siteConfig.shipping.freeShippingThreshold)}
-          </span>
-        </p>
-        <Link
-          href="/shop"
-          className="inline-flex items-center gap-2 text-xs underline underline-offset-4 hover:opacity-80"
-        >
-          {siteConfig.home.featured.linkLabel}
-          <ArrowUpRight className="size-4" aria-hidden="true" />
-        </Link>
+    <section
+      aria-label="Store benefits"
+      className="benefits-marquee overflow-hidden border-y border-border bg-secondary/60"
+    >
+      <div className="announcement-track flex w-max items-center gap-8 py-4 text-[10px] tracking-[0.16em] uppercase sm:gap-12 sm:text-xs">
+        {[0, 1, 2, 3].map((copy) => (
+          <div key={copy} aria-hidden={copy > 0} className="flex items-center gap-8 sm:gap-12">
+            {ticker.map((item) => (
+              <span key={`${copy}-${item}`} className="flex items-center gap-8 sm:gap-12">
+                <span>{item}</span>
+                <span aria-hidden="true" className="text-accent">
+                  ✦
+                </span>
+              </span>
+            ))}
+          </div>
+        ))}
       </div>
+      <p className="sr-only">{ticker.join(". ")}</p>
     </section>
   );
 }
