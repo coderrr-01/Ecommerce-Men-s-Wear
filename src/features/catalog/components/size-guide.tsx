@@ -1,15 +1,22 @@
 "use client";
 
 import { useRef } from "react";
+import { useState } from "react";
 import { Ruler } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import type { ProductVariantOption } from "@/features/catalog/types";
 import { cn } from "@/lib/utils";
 import { siteConfig } from "@/config/site.config";
+import { suggestSize, type FitPreference } from "@/features/catalog/size-recommendation";
 
 export function SizeGuide({ sizes }: { sizes: ProductVariantOption[] }) {
   const dialog = useRef<HTMLDialogElement>(null);
+  const [suggestion, setSuggestion] = useState<string | null>(null);
+  const [hasCalculated, setHasCalculated] = useState(false);
+  const availableSizes = sizes
+    .filter((variant) => variant.stock > 0)
+    .map((variant) => variant.size);
 
   return (
     <>
@@ -54,6 +61,75 @@ export function SizeGuide({ sizes }: { sizes: ProductVariantOption[] }) {
             </li>
           ))}
         </ul>
+        <form
+          className="mt-7 border-t border-border pt-6"
+          onSubmit={(event) => {
+            event.preventDefault();
+            const values = new FormData(event.currentTarget);
+            const height = Number(values.get("height"));
+            const weight = Number(values.get("weight"));
+            const fitValue = values.get("fit");
+            const fit: FitPreference =
+              fitValue === "slim" || fitValue === "relaxed" ? fitValue : "regular";
+            setSuggestion(suggestSize(height, weight, fit, availableSizes));
+            setHasCalculated(true);
+          }}
+        >
+          <h3 className="font-serif text-xl">Find my size</h3>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Get a starting-point suggestion using your height, weight and preferred fit.
+          </p>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <label className="space-y-1 text-xs">
+              Height (cm)
+              <input
+                name="height"
+                type="number"
+                min={130}
+                max={220}
+                required
+                className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm"
+              />
+            </label>
+            <label className="space-y-1 text-xs">
+              Weight (kg)
+              <input
+                name="weight"
+                type="number"
+                min={35}
+                max={200}
+                required
+                className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm"
+              />
+            </label>
+            <label className="col-span-2 space-y-1 text-xs">
+              Preferred fit
+              <select
+                name="fit"
+                defaultValue="regular"
+                className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm"
+              >
+                <option value="slim">Slim</option>
+                <option value="regular">Regular</option>
+                <option value="relaxed">Relaxed</option>
+              </select>
+            </label>
+          </div>
+          <Button type="submit" variant="outline" className="mt-4 min-h-11 w-full">
+            Suggest a size
+          </Button>
+          {hasCalculated ? (
+            <p role="status" className="mt-3 text-sm font-medium">
+              {suggestion
+                ? `Suggested size: ${suggestion}`
+                : "This helper supports lettered sizes only. Contact us for guidance on this size range."}
+            </p>
+          ) : null}
+          <p className="mt-2 text-xs leading-5 text-muted-foreground">
+            This is a general suggestion, not a fit guarantee. Garment measurements are unavailable;
+            fit can vary by style.
+          </p>
+        </form>
       </dialog>
     </>
   );

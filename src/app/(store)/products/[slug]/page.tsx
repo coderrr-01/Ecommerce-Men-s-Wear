@@ -5,8 +5,10 @@ import { notFound } from "next/navigation";
 import { ProductGallery } from "@/features/catalog/components/product-gallery";
 import { ProductPurchasePanel } from "@/features/catalog/components/product-purchase-panel";
 import { ProductStory } from "@/features/catalog/components/product-story";
+import { RecentlyViewedProducts } from "@/features/catalog/components/recently-viewed-products";
 import { getProductDetail, getRelatedProducts } from "@/features/catalog/services/catalog.service";
 import { siteConfig } from "@/config/site.config";
+import { PRODUCT_PLACEHOLDER_IMAGE } from "@/config/constants";
 import { formatPrice } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -43,7 +45,28 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const related = await getRelatedProducts(product.categoryId, product.slug);
   const prices = product.variants.map((variant) => variant.price);
   const lowestPrice = prices.length > 0 ? Math.min(...prices) : 0;
+  const compareAtPrice =
+    product.variants
+      .map((variant) => variant.compareAtPrice)
+      .filter((price): price is number => price !== null && price > lowestPrice)
+      .sort((a, b) => b - a)[0] ?? null;
   const inStock = product.variants.some((variant) => variant.stock > 0);
+  const recentProduct = {
+    id: product.id,
+    name: product.name,
+    slug: product.slug,
+    brand: product.brand,
+    categoryName: product.categoryName,
+    price: lowestPrice,
+    compareAtPrice,
+    discountPercent: compareAtPrice
+      ? Math.round(((compareAtPrice - lowestPrice) / compareAtPrice) * 100)
+      : 0,
+    imageUrl: product.images[0]?.url ?? PRODUCT_PLACEHOLDER_IMAGE,
+    imageAlt: product.images[0]?.alt ?? product.name,
+    inStock,
+    isNew: false,
+  };
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -144,6 +167,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       </div>
 
       <ProductStory product={product} related={related} />
+      <RecentlyViewedProducts product={recentProduct} />
     </div>
   );
 }

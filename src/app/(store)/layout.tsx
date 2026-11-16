@@ -1,5 +1,6 @@
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import { StoreUtilities } from "@/components/layout/store-utilities";
 import { fontVariables } from "@/components/shared/fonts";
 import { StoreRouteTransition } from "@/components/layout/store-route-transition";
 import { GuestWishlistProvider } from "@/features/wishlist/components/guest-wishlist-provider";
@@ -16,6 +17,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
             <StoreRouteTransition>{children}</StoreRouteTransition>
           </main>
           <SiteFooter />
+          <StoreUtilities />
           <Toaster position="top-center" />
         </QuickViewProvider>
       </GuestWishlistProvider>
