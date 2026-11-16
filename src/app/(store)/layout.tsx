@@ -6,10 +6,12 @@ import { StoreRouteTransition } from "@/components/layout/store-route-transition
 import { GuestWishlistProvider } from "@/features/wishlist/components/guest-wishlist-provider";
 import { QuickViewProvider } from "@/features/catalog/components/quick-view-provider";
 import { Toaster } from "sonner";
+import { IntroPreloader } from "@/components/intro/IntroPreloader";
 
 export default function StoreLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className={`${fontVariables} flex min-h-dvh flex-col`}>
+      <IntroPreloader />
       <GuestWishlistProvider>
         <QuickViewProvider>
           <SiteHeader />

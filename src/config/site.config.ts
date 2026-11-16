@@ -24,6 +24,56 @@ export const siteConfig = {
     wordmark: brandName.toUpperCase(),
   },
 
+  intro: {
+    enabled: true,
+    brandWord: "DIAMOND SELECTION",
+    counterEnabled: true,
+    rotationRangeDeg: 10,
+    playOnceHours: 24,
+    images: [
+      {
+        src: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=720&q=75",
+        alt: "Tailored menswear in neutral tones",
+      },
+      {
+        src: "https://images.unsplash.com/photo-1603252109303-2751441dd157?auto=format&fit=crop&w=720&q=75",
+        alt: "A crisp shirt styled for a contemporary menswear look",
+      },
+      {
+        src: "https://images.unsplash.com/photo-1544022613-e87ca75a784a?auto=format&fit=crop&w=720&q=75",
+        alt: "A winter-ready menswear look in rich neutral layers",
+      },
+      {
+        src: "https://images.unsplash.com/photo-1516257984-b1b4d707412e?auto=format&fit=crop&w=720&q=75",
+        alt: "Casual menswear styled with easy layers",
+      },
+      {
+        src: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=720&q=75",
+        alt: "A crisp cotton shirt with tailored details",
+      },
+      {
+        src: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=720&q=75",
+        alt: "Relaxed cotton T-shirt for an off-duty look",
+      },
+    ],
+    durations: {
+      seedMs: 500,
+      buildMs: 2300,
+      cardEnterMs: 600,
+      cardStaggerMs: 300,
+      letterEnterMs: 600,
+      letterStaggerMs: 85,
+      glitchMs: 100,
+      counterMs: 3000,
+      exitMs: 450,
+      curtainMs: 800,
+      handoffMs: 450,
+      reducedMotionMs: 300,
+      preloadTimeoutMs: 3000,
+      failsafeMs: 5500,
+    },
+  },
+
   theme: {
     background: "#f7f9fc",
     foreground: "#101827",

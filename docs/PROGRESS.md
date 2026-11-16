@@ -61,6 +61,21 @@ Previous storefront responsive and interaction checks cover the pre-refresh UI o
   worked without Motion runtime or LCP warnings. The product route rendered using legacy database
   content, not the new demo seed.
 
+## Home intro preloader (2026-11-16)
+
+- Added an optional first-visit intro overlay mounted in the store layout; it only plays on `/`,
+  stores its last-played timestamp locally, replays after 24 hours and accepts `?intro=1`.
+- The overlay waits at most three seconds for intro assets, respects reduced motion, uses configured
+  theme variables and always removes the scroll lock on normal completion or unmount. The sequence
+  now runs about 4.5 seconds with a slower letter/card stagger; the seed line fades before the
+  wordmark reveal.
+- Verification: `pnpm lint`, `pnpm typecheck`, `pnpm test` (12 files, 48 tests) and `pnpm build`
+  pass. Browser checks passed at 1440px/390px, reduced motion, forced replay, repeat-visit skip and
+  excluded routes; the wordmark hierarchy and seed-line fade were verified at both widths, the
+  overlay covered the 390px viewport without horizontal overflow and scroll-lock classes were
+  cleaned. Reduced-motion navigation exposed an existing `HomeHero` Motion hydration warning,
+  outside this intro-only scope. No database changes or DB verification.
+
 ## Known gaps
 
 - Order workflows, payment capture/webhooks, refunds and customer/settings management are not

@@ -75,6 +75,9 @@ No component-level brand palette needs updating for a theme change.
   focus states.
 - `prefers-reduced-motion` disables parallax and nonessential movement; retain concise opacity
   changes and make programmatic scroll behavior non-animated.
+- The home intro preloader is scoped to `#intro-preloader` and `.ipl-*`; its CSS uses configured
+  theme variables, animates transform/opacity/clip-path, and fades only when reduced motion is
+  requested. See [the intro-preloader guide](./intro-preloader.md) for its route and timing rules.
 - Keep keyboard focus visible, use native `dialog` and `details` controls, label icon-only buttons,
   preserve descriptive image alt text, and retain loading/status/error semantics.
 - Load the active product-gallery image eagerly and defer inactive thumbnails. Keep a selected

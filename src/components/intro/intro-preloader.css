@@ -1,0 +1,377 @@
+html.ipl-pending,
+html.ipl-running,
+html.ipl-scroll-locked {
+  overflow: hidden;
+}
+
+html.ipl-pending::before {
+  position: fixed;
+  z-index: 2147483646;
+  inset: 0;
+  background: var(--foreground);
+  content: "";
+  pointer-events: auto;
+  touch-action: none;
+  animation: ipl-pending-fade var(--ipl-failsafe-duration, 4000ms) ease-out forwards;
+}
+
+#intro-preloader {
+  position: fixed;
+  z-index: 2147483647;
+  inset: 0;
+  display: grid;
+  overflow: hidden;
+  place-items: center;
+  color: var(--background);
+  pointer-events: auto;
+}
+
+html.ipl-pending #intro-preloader,
+html.ipl-running #intro-preloader {
+  animation: ipl-overlay-failsafe var(--ipl-failsafe-duration, 4000ms) ease-out forwards;
+}
+
+.ipl-backdrop,
+.ipl-stage,
+.ipl-curtain {
+  position: absolute;
+  inset: 0;
+}
+
+.ipl-backdrop {
+  background: var(--foreground);
+}
+
+.ipl-stage {
+  z-index: 1;
+  display: grid;
+  overflow: hidden;
+  place-items: center;
+}
+
+.ipl-seed {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  width: min(52vw, 20rem);
+  aspect-ratio: 1;
+  place-items: center;
+  transform: translate(-50%, -50%);
+}
+
+.ipl-seed-line {
+  position: absolute;
+  width: 100%;
+  height: 1px;
+  background: var(--accent);
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: center;
+}
+
+#intro-preloader[data-phase="seed"] .ipl-seed-line {
+  animation: ipl-seed-draw var(--ipl-seed-ms) cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.ipl-seed-diamond {
+  width: clamp(1.5rem, 5vw, 2.75rem);
+  aspect-ratio: 1;
+  background: var(--card);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  opacity: 0;
+  transform: scale(0.6);
+}
+
+#intro-preloader[data-phase="seed"] .ipl-seed-diamond {
+  animation: ipl-seed-appear var(--ipl-seed-ms) ease-out both;
+}
+
+.ipl-card-stack {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.ipl-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: clamp(4.5rem, 11vw, 9rem);
+  aspect-ratio: 0.72;
+  overflow: hidden;
+  border: 0.3rem solid var(--accent);
+  background: var(--card);
+  opacity: 0;
+  transform: translate(calc(-50% + var(--ipl-card-x)), calc(-50% + var(--ipl-card-y))) scale(0.6)
+    rotate(var(--ipl-card-rotation));
+}
+
+#intro-preloader[data-phase="build"] .ipl-card {
+  animation: ipl-card-in var(--ipl-card-enter-ms) cubic-bezier(0.16, 1, 0.3, 1)
+    calc(var(--ipl-card-index) * var(--ipl-card-stagger-ms)) both;
+}
+
+#intro-preloader[data-phase="exit"] .ipl-card,
+#intro-preloader[data-phase="curtain"] .ipl-card,
+#intro-preloader[data-phase="handoff"] .ipl-card {
+  animation: ipl-card-out var(--ipl-exit-ms) cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+.ipl-card-image {
+  object-fit: cover;
+}
+
+.ipl-word {
+  position: relative;
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  gap: 0.03em;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.1em 0.14em;
+  font-family: var(--font-editorial), Georgia, "Times New Roman", serif;
+  font-size: clamp(2.4rem, 13vw, 9.5rem);
+  font-weight: 500;
+  letter-spacing: 0.035em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.ipl-word-line {
+  display: flex;
+  gap: 0.02em;
+  align-items: center;
+  justify-content: center;
+}
+
+.ipl-word-line:nth-child(2) {
+  font-size: 0.65em;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+}
+
+.ipl-letter {
+  position: relative;
+  display: inline-block;
+  clip-path: inset(100% 0 0);
+  opacity: 0;
+  transform: translateY(0.7em);
+}
+
+#intro-preloader[data-phase="build"] .ipl-letter {
+  animation: ipl-letter-in var(--ipl-letter-enter-ms) cubic-bezier(0.16, 1, 0.3, 1)
+    calc(var(--ipl-letter-index) * var(--ipl-letter-stagger-ms)) both;
+}
+
+.ipl-letter::after {
+  position: absolute;
+  inset: 0;
+  color: var(--accent);
+  content: attr(data-letter);
+  opacity: 0;
+  transform: translateX(0);
+}
+
+#intro-preloader[data-phase="build"] .ipl-letter::after {
+  animation: ipl-glitch var(--ipl-glitch-ms) steps(1, end)
+    calc(var(--ipl-letter-index) * var(--ipl-letter-stagger-ms) + var(--ipl-letter-enter-ms)) both;
+}
+
+#intro-preloader[data-phase="curtain"] .ipl-letter,
+#intro-preloader[data-phase="handoff"] .ipl-letter {
+  animation: ipl-letter-up var(--ipl-curtain-ms) cubic-bezier(0.76, 0, 0.24, 1)
+    calc(var(--ipl-letter-index) * var(--ipl-letter-stagger-ms)) both;
+}
+
+.ipl-counter {
+  position: absolute;
+  z-index: 9;
+  right: max(1.25rem, env(safe-area-inset-right));
+  bottom: max(1.25rem, env(safe-area-inset-bottom));
+  margin: 0;
+  color: var(--background);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.22em;
+}
+
+#intro-preloader[data-phase="exit"] .ipl-counter,
+#intro-preloader[data-phase="curtain"] .ipl-counter,
+#intro-preloader[data-phase="handoff"] .ipl-counter {
+  animation: ipl-counter-out var(--ipl-exit-ms) ease-out both;
+}
+
+.ipl-curtain {
+  z-index: 10;
+  background: var(--foreground);
+  clip-path: inset(100% 0 0);
+}
+
+#intro-preloader[data-phase="curtain"] .ipl-curtain,
+#intro-preloader[data-phase="handoff"] .ipl-curtain {
+  animation: ipl-curtain-up var(--ipl-curtain-ms) cubic-bezier(0.76, 0, 0.24, 1) both;
+}
+
+#intro-preloader[data-phase="handoff"] .ipl-backdrop,
+#intro-preloader[data-phase="handoff"] .ipl-stage,
+#intro-preloader[data-phase="handoff"] .ipl-curtain {
+  animation: ipl-fade-out var(--ipl-handoff-ms) ease-out both;
+}
+
+#intro-preloader[data-phase="reduced"] .ipl-backdrop,
+#intro-preloader[data-phase="reduced"] .ipl-stage {
+  animation: ipl-fade-out var(--ipl-reduced-ms) ease-out both;
+}
+
+#intro-preloader[data-phase="reduced"] .ipl-seed-line,
+#intro-preloader[data-phase="reduced"] .ipl-seed-diamond {
+  animation: none;
+}
+
+.ipl-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+@keyframes ipl-pending-fade {
+  0%,
+  90% {
+    opacity: 1;
+    visibility: visible;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes ipl-overlay-failsafe {
+  0%,
+  90% {
+    opacity: 1;
+    visibility: visible;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+@keyframes ipl-seed-draw {
+  0% {
+    opacity: 1;
+    transform: scaleX(0);
+  }
+  70% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+  to {
+    opacity: 0;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes ipl-seed-appear {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes ipl-card-in {
+  to {
+    opacity: 1;
+    transform: translate(calc(-50% + var(--ipl-card-x)), calc(-50% + var(--ipl-card-y))) scale(1)
+      rotate(var(--ipl-card-rotation));
+  }
+}
+
+@keyframes ipl-card-out {
+  to {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--ipl-card-x)), calc(-50% + var(--ipl-card-y))) scale(0.8)
+      rotate(var(--ipl-card-rotation));
+  }
+}
+
+@keyframes ipl-letter-in {
+  to {
+    clip-path: inset(0);
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ipl-glitch {
+  0% {
+    opacity: 0.75;
+    transform: translateX(0.04em);
+  }
+  50% {
+    opacity: 0.35;
+    transform: translateX(-0.04em);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+}
+
+@keyframes ipl-letter-up {
+  to {
+    clip-path: inset(0 0 100%);
+    opacity: 0;
+    transform: translateY(-0.7em);
+  }
+}
+
+@keyframes ipl-counter-out {
+  to {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+}
+
+@keyframes ipl-curtain-up {
+  to {
+    clip-path: inset(0);
+  }
+}
+
+@keyframes ipl-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@media (max-width: 40rem) {
+  .ipl-card {
+    width: clamp(4.25rem, 18vw, 6rem);
+    border-width: 0.2rem;
+  }
+
+  .ipl-word {
+    font-size: clamp(2.35rem, 12.5vw, 3.5rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #intro-preloader[data-phase="build"] .ipl-card,
+  #intro-preloader[data-phase="build"] .ipl-letter,
+  #intro-preloader[data-phase="build"] .ipl-letter::after,
+  #intro-preloader[data-phase="curtain"] .ipl-letter,
+  #intro-preloader[data-phase="curtain"] .ipl-curtain {
+    animation: none;
+  }
+}

@@ -1,5 +1,19 @@
 # Documentation changelog
 
+## 2026-11-16 — Storefront intro preloader
+
+- Added the first-visit home intro with a scoped stylesheet, site-config timings and theme-token
+  colors. It supports the `?intro=1` override, 24-hour replay interval, reduced motion and a
+  preload timeout; no new dependencies or database changes were introduced.
+- Tuned the reveal pacing to about 4.5 seconds and faded the seed line out before the wordmark
+  handoff.
+- Added [the intro-preloader feature guide](features/intro-preloader.md) and documented the
+  shared motion/accessibility constraints in `features/ui-design-system.md`.
+- `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm build` pass. The requested viewport and
+  behavior checks passed at 1440px and 390px, including reduced motion, forced replay, repeat-visit
+  skip, route exclusion, wordmark sizing and the seed-line fade. Reduced-motion navigation exposed a
+  pre-existing `HomeHero` Motion hydration warning; the intro itself had no console errors.
+
 ## 2026-11-16 — Diamond Selection storefront
 
 - Updated catalog, design-system, setup and progress documentation for the rebrand, motion rules,

@@ -10,5 +10,6 @@ Documents for implemented slices and known gaps.
 - [Inventory management](inventory.md)
 - [Checkout and orders](checkout-and-orders.md)
 - [Wishlist, reviews and addresses](account.md)
+- [Home intro preloader](intro-preloader.md)
 
 For cross-cutting rules see [Architecture](../ARCHITECTURE.md), [Database](../DATABASE.md) and [API](../API.md).
