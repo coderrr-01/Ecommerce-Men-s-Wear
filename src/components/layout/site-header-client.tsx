@@ -13,17 +13,18 @@ import { MobileMenu, SearchOverlay } from "@/components/layout/site-header-overl
 import { Logo } from "@/components/shared/logo";
 import type { NavGroup, NavItem } from "@/config/navigation";
 import { siteConfig } from "@/config/site.config";
+import type { CartData } from "@/features/cart/types";
 import { cn, formatPrice, getInitials } from "@/lib/utils";
 import { motionDuration, motionEasing } from "@/lib/motion";
 
 interface SiteHeaderClientProps {
   nav: NavItem[];
   navGroups: NavGroup[];
-  cartCount: number;
+  cart: CartData | null;
   user: { name: string | null; role: string } | null;
 }
 
-export function SiteHeaderClient({ nav, navGroups, cartCount, user }: SiteHeaderClientProps) {
+export function SiteHeaderClient({ nav, navGroups, cart, user }: SiteHeaderClientProps) {
   const pathname = usePathname();
   const previousScroll = useRef(0);
   const [hasScrolled, setHasScrolled] = useState(false);
@@ -129,7 +130,7 @@ export function SiteHeaderClient({ nav, navGroups, cartCount, user }: SiteHeader
                 <User className="size-5" aria-hidden="true" />
               )}
             </Link>
-            <CartDrawer cartCount={cartCount} />
+            <CartDrawer cart={cart} />
             {user?.role === "ADMIN" || user?.role === "STAFF" ? (
               <Link
                 href="/admin"

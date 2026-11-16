@@ -1,8 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { addToCartAction } from "@/features/cart/actions/cart.actions";
@@ -17,6 +17,15 @@ interface AddToCartFormProps {
 export function AddToCartForm({ variantId, maxQuantity, priceLabel }: AddToCartFormProps) {
   const [state, formAction, isPending] = useActionState(addToCartAction, initialCartActionState);
   const pathname = usePathname();
+  const router = useRouter();
+  const handledState = useRef(state);
+
+  useEffect(() => {
+    if (state.status !== "success" || handledState.current === state) return;
+    handledState.current = state;
+    window.dispatchEvent(new Event("cart:added"));
+    router.refresh();
+  }, [router, state]);
 
   return (
     <form
