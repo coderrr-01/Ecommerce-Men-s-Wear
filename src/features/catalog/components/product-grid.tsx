@@ -1,6 +1,11 @@
+"use client";
+
+import { AnimatePresence, motion } from "motion/react";
+
 import { ProductCard } from "@/features/catalog/components/product-card";
 import type { ProductCardData } from "@/features/catalog/types";
 import { cn } from "@/lib/utils";
+import { motionDuration, motionEasing } from "@/lib/motion";
 
 interface ProductGridProps {
   products: ProductCardData[];
@@ -25,14 +30,22 @@ export function ProductGrid({
         className,
       )}
     >
-      {products.map((product, index) => (
-        <ProductCard
-          key={product.id}
-          product={product}
-          priority={index < priorityCount}
-          className={layout === "carousel" ? "snap-start" : undefined}
-        />
-      ))}
+      <AnimatePresence mode="popLayout">
+        {products.map((product, index) => (
+          <motion.div
+            key={product.id}
+            role="listitem"
+            layout
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            transition={{ duration: motionDuration.fast, ease: motionEasing.enter }}
+            className={layout === "carousel" ? "snap-start" : undefined}
+          >
+            <ProductCard product={product} priority={index < priorityCount} />
+          </motion.div>
+        ))}
+      </AnimatePresence>
     </div>
   );
 }

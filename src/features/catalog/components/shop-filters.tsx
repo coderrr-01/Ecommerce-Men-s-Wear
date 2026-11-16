@@ -1,14 +1,19 @@
-import Link from "next/link";
+"use client";
+
+import { useRef } from "react";
+import { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DEFAULT_PAGE_SIZE, STOREFRONT_SORT_OPTIONS } from "@/config/constants";
 import type { CatalogQuery, CategoryOption } from "@/features/catalog/types";
-import { buildCatalogHref } from "@/features/catalog/utils";
-import { cn } from "@/lib/utils";
-import { X } from "lucide-react";
+import {
+  ActiveFilterChips,
+  ShopCategoryChips,
+} from "@/features/catalog/components/shop-filter-chips";
 
-const FILTER_SIZES = ["S", "M", "L", "XL", "XXL", "30", "32", "34", "36", "38"];
+const FILTER_SIZES = ["S", "M", "L", "XL", "XXL", "28", "30", "32", "34", "36", "38", "40", "42"];
 
 interface ShopFiltersProps {
   query: CatalogQuery;
@@ -17,6 +22,11 @@ interface ShopFiltersProps {
 }
 
 export function ShopFilters({ query, categories, total }: ShopFiltersProps) {
+  const form = useRef<HTMLFormElement>(null);
+  const filterPanel = useRef<HTMLDetailsElement>(null);
+  const searchTimer = useRef<number | null>(null);
+  const pathname = usePathname();
+  const router = useRouter();
   const activeCategory = categories.find((category) => category.slug === query.category);
   const title = activeCategory
     ? activeCategory.name
@@ -25,8 +35,26 @@ export function ShopFilters({ query, categories, total }: ShopFiltersProps) {
       : "All menswear";
   const subtitle = activeCategory?.description ?? `${total} pieces in the collection.`;
 
+  useEffect(
+    () => () => {
+      if (searchTimer.current !== null) window.clearTimeout(searchTimer.current);
+    },
+    [],
+  );
+
+  function applyFilters() {
+    if (!form.current) return;
+    if (searchTimer.current !== null) window.clearTimeout(searchTimer.current);
+    const params = new URLSearchParams();
+    for (const [key, value] of new FormData(form.current).entries()) {
+      if (typeof value === "string" && value.trim()) params.set(key, value);
+    }
+    const queryString = params.toString();
+    router.replace(`${pathname}${queryString ? `?${queryString}` : ""}`, { scroll: false });
+  }
+
   return (
-    <div className="space-y-7">
+    <div className="space-y-6">
       <div className="space-y-3">
         <p className="text-[11px] tracking-[0.2em] text-muted-foreground uppercase">
           The collection
@@ -35,26 +63,53 @@ export function ShopFilters({ query, categories, total }: ShopFiltersProps) {
         <p className="max-w-2xl text-sm leading-6 text-muted-foreground">{subtitle}</p>
       </div>
 
-      <form action="/shop" method="get" className="border-y border-border py-4">
+      <form
+        ref={form}
+        action="/shop"
+        method="get"
+        onSubmit={(event) => {
+          event.preventDefault();
+          applyFilters();
+        }}
+        className="border-y border-border py-3"
+      >
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
           <Input
             type="search"
             name="q"
+            key={query.q ?? ""}
             defaultValue={query.q}
-            placeholder="Search shirts, linen, overcoats…"
-            className="lg:max-w-xs"
+            placeholder="Search the collection"
+            className="min-h-11 lg:max-w-xs"
             aria-label="Search products"
+            onChange={() => {
+              if (searchTimer.current !== null) window.clearTimeout(searchTimer.current);
+              searchTimer.current = window.setTimeout(applyFilters, 320);
+            }}
           />
-          <details className="filter-disclosure min-w-0 flex-1">
-            <summary className="flex cursor-pointer list-none items-center justify-between py-2 text-xs font-medium lg:hidden [&::-webkit-details-marker]:hidden">
+          <details ref={filterPanel} className="filter-disclosure min-w-0 flex-1">
+            <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between text-xs font-medium lg:hidden [&::-webkit-details-marker]:hidden">
               <span>Filter and sort</span>
-              <span className="text-muted-foreground">+</span>
+              <span aria-hidden="true" className="text-muted-foreground">
+                +
+              </span>
             </summary>
-            <div className="filter-disclosure-content flex flex-col gap-3 pt-2 lg:flex-row lg:items-center lg:pt-0">
+            <div
+              className="filter-disclosure-content flex flex-col gap-3 pt-2 lg:flex-row lg:items-center lg:pt-0"
+              onTouchStart={(event) => {
+                event.currentTarget.dataset.touchStartY = String(event.touches[0]?.clientY ?? 0);
+              }}
+              onTouchEnd={(event) => {
+                const startY = Number(event.currentTarget.dataset.touchStartY ?? 0);
+                const endY = event.changedTouches[0]?.clientY ?? startY;
+                if (endY - startY > 72 && filterPanel.current) filterPanel.current.open = false;
+              }}
+            >
               <select
                 name="category"
                 defaultValue={query.category ?? ""}
                 aria-label="Category"
+                onChange={applyFilters}
                 className="h-11 rounded-md border border-input bg-background px-3 text-sm"
               >
                 <option value="">All categories</option>
@@ -68,6 +123,7 @@ export function ShopFilters({ query, categories, total }: ShopFiltersProps) {
                 name="size"
                 defaultValue={query.size ?? ""}
                 aria-label="Size"
+                onChange={applyFilters}
                 className="h-11 rounded-md border border-input bg-background px-3 text-sm"
               >
                 <option value="">All sizes</option>
@@ -81,6 +137,7 @@ export function ShopFilters({ query, categories, total }: ShopFiltersProps) {
                 name="sort"
                 defaultValue={query.sort}
                 aria-label="Sort products"
+                onChange={applyFilters}
                 className="h-11 rounded-md border border-input bg-background px-3 text-sm"
               >
                 {STOREFRONT_SORT_OPTIONS.map((option) => (
@@ -89,8 +146,12 @@ export function ShopFilters({ query, categories, total }: ShopFiltersProps) {
                   </option>
                 ))}
               </select>
-              <Button type="submit" variant="outline">
-                Apply
+              <fieldset disabled className="space-y-1 text-xs text-muted-foreground">
+                <legend className="font-medium text-foreground">Colour</legend>
+                <p>Colour filters need variant data in the listing results.</p>
+              </fieldset>
+              <Button type="submit" variant="outline" className="min-h-11">
+                Apply filters
               </Button>
             </div>
           </details>
@@ -101,78 +162,8 @@ export function ShopFilters({ query, categories, total }: ShopFiltersProps) {
         </div>
       </form>
 
-      {query.q || query.category || query.size ? (
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="mr-1 text-[10px] tracking-[0.12em] text-muted-foreground uppercase">
-            Active filters
-          </span>
-          {query.q ? (
-            <Link
-              href={buildCatalogHref({
-                category: query.category,
-                size: query.size,
-                sort: query.sort,
-              })}
-              className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs hover:border-foreground"
-            >
-              {query.q} <X className="size-3" aria-hidden="true" />
-            </Link>
-          ) : null}
-          {activeCategory ? (
-            <Link
-              href={buildCatalogHref({ q: query.q, size: query.size, sort: query.sort })}
-              className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs hover:border-foreground"
-            >
-              {activeCategory.name} <X className="size-3" aria-hidden="true" />
-            </Link>
-          ) : null}
-          {query.size ? (
-            <Link
-              href={buildCatalogHref({ q: query.q, category: query.category, sort: query.sort })}
-              className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs hover:border-foreground"
-            >
-              Size {query.size} <X className="size-3" aria-hidden="true" />
-            </Link>
-          ) : null}
-        </div>
-      ) : null}
-
-      <div className="flex flex-wrap gap-2">
-        <Link
-          href={buildCatalogHref({
-            q: query.q,
-            size: query.size,
-            sort: query.sort,
-          })}
-          className={cn(
-            "rounded-full border px-3 py-1.5 text-xs transition-colors",
-            !query.category
-              ? "border-foreground bg-foreground text-background"
-              : "border-border hover:border-foreground",
-          )}
-        >
-          All
-        </Link>
-        {categories.map((category) => (
-          <Link
-            key={category.id}
-            href={buildCatalogHref({
-              q: query.q,
-              size: query.size,
-              sort: query.sort,
-              category: category.slug,
-            })}
-            className={cn(
-              "rounded-full border px-3 py-1.5 text-xs transition-colors",
-              query.category === category.slug
-                ? "border-foreground bg-foreground text-background"
-                : "border-border hover:border-foreground",
-            )}
-          >
-            {category.name}
-          </Link>
-        ))}
-      </div>
+      <ActiveFilterChips query={query} categories={categories} />
+      <ShopCategoryChips query={query} categories={categories} />
     </div>
   );
 }

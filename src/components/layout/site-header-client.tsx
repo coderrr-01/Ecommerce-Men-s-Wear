@@ -74,7 +74,8 @@ export function SiteHeaderClient({ nav, navGroups, cartCount, user }: SiteHeader
             ))}
           </div>
           <span className="sr-only">
-            {siteConfig.announcement.shipping} {formatPrice(siteConfig.shipping.freeShippingThreshold)}
+            {siteConfig.announcement.shipping}{" "}
+            {formatPrice(siteConfig.shipping.freeShippingThreshold)}
           </span>
         </div>
 
