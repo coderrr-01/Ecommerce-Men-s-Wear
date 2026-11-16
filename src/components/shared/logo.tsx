@@ -35,6 +35,7 @@ export function Logo({ className, textClassName, href = "/" }: LogoProps) {
       <span
         className={cn(
           "font-serif text-xl leading-none tracking-[0.22em] text-foreground",
+          "text-[13px] tracking-[0.12em] sm:text-base sm:tracking-[0.18em]",
           textClassName,
         )}
       >

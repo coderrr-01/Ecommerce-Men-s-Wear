@@ -26,12 +26,55 @@ export interface NavGroup {
 }
 
 export const mainNav: NavItem[] = [
-  { title: "New in", href: "/shop?sort=newest" },
   { title: "Shirts", href: "/shop?category=shirts" },
   { title: "T-Shirts", href: "/shop?category=t-shirts" },
+  { title: "Collar T-Shirts", href: "/shop?category=collar-t-shirts" },
+  { title: "Night Wear T-Shirts", href: "/shop?category=night-wear-t-shirts" },
+  { title: "Baggy Jeans", href: "/shop?category=baggy-jeans" },
+  { title: "Formal Pants", href: "/shop?category=formal-pants" },
   { title: "Trousers", href: "/shop?category=trousers" },
-  { title: "Outerwear", href: "/shop?category=outerwear" },
-  { title: "Ethnic", href: "/shop?category=ethnic" },
+  { title: "Shorts", href: "/shop?category=shorts" },
+  { title: "Sarong (Lungi)", href: "/shop?category=sarong-lungi" },
+  { title: "Winter Wear", href: "/shop?category=winter-wear" },
+  { title: "Socks", href: "/shop?category=socks" },
+  { title: "Gloves", href: "/shop?category=gloves" },
+  { title: "Topis (Caps)", href: "/shop?category=topis-caps" },
+];
+
+export const storeNavGroups: NavGroup[] = [
+  {
+    title: "Topwear",
+    items: [
+      { title: "Shirts", href: "/shop?category=shirts" },
+      { title: "T-Shirts", href: "/shop?category=t-shirts" },
+      { title: "Collar T-Shirts", href: "/shop?category=collar-t-shirts" },
+    ],
+  },
+  {
+    title: "Bottomwear",
+    items: [
+      { title: "Baggy Jeans", href: "/shop?category=baggy-jeans" },
+      { title: "Formal Pants", href: "/shop?category=formal-pants" },
+      { title: "Trousers", href: "/shop?category=trousers" },
+      { title: "Shorts", href: "/shop?category=shorts" },
+    ],
+  },
+  {
+    title: "Nightwear & Traditional",
+    items: [
+      { title: "Night Wear T-Shirts", href: "/shop?category=night-wear-t-shirts" },
+      { title: "Sarong (Lungi)", href: "/shop?category=sarong-lungi" },
+    ],
+  },
+  {
+    title: "Winter Wear",
+    items: [
+      { title: "Winter Wear", href: "/shop?category=winter-wear" },
+      { title: "Socks", href: "/shop?category=socks" },
+      { title: "Gloves", href: "/shop?category=gloves" },
+      { title: "Topis (Caps)", href: "/shop?category=topis-caps" },
+    ],
+  },
 ];
 
 export const footerNav: NavGroup[] = [
@@ -42,6 +85,7 @@ export const footerNav: NavGroup[] = [
       { title: "New arrivals", href: "/shop?sort=newest" },
       { title: "Shirts", href: "/shop?category=shirts" },
       { title: "Trousers", href: "/shop?category=trousers" },
+      { title: "Winter Wear", href: "/shop?category=winter-wear" },
     ],
   },
   {
@@ -50,7 +94,7 @@ export const footerNav: NavGroup[] = [
       { title: "Sign in", href: "/login" },
       { title: "Create account", href: "/register" },
       { title: "Orders", href: "/account/orders" },
-      { title: "Wishlist", href: "/account/wishlist" },
+      { title: "Wishlist", href: "/wishlist" },
     ],
   },
 ];

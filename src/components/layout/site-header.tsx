@@ -1,4 +1,5 @@
 import { mainNav } from "@/config/navigation";
+import { storeNavGroups } from "@/config/navigation";
 import { getSession } from "@/features/auth/services/session.service";
 import { getCartItemCount } from "@/features/cart/services/cart.service";
 import { SiteHeaderClient } from "@/components/layout/site-header-client";
@@ -11,6 +12,7 @@ export async function SiteHeader() {
   return (
     <SiteHeaderClient
       nav={mainNav}
+      navGroups={storeNavGroups}
       cartCount={cartCount}
       user={user ? { name: user.name ?? null, role: user.role } : null}
     />

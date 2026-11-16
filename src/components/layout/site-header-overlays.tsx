@@ -2,13 +2,13 @@
 
 import { useRef } from "react";
 import Link from "next/link";
-import { Menu, Search, X } from "lucide-react";
+import { ChevronDown, Menu, Search, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import type { NavItem } from "@/config/navigation";
+import type { NavGroup } from "@/config/navigation";
 import { Logo } from "@/components/shared/logo";
 
-export function MobileMenu({ nav }: { nav: NavItem[] }) {
+export function MobileMenu({ groups }: { groups: NavGroup[] }) {
   const dialog = useRef<HTMLDialogElement>(null);
 
   return (
@@ -26,12 +26,12 @@ export function MobileMenu({ nav }: { nav: NavItem[] }) {
       <dialog
         ref={dialog}
         aria-label="Store navigation"
-        className="store-menu-dialog fixed inset-y-0 left-0 m-0 h-dvh max-h-none w-[min(22rem,88vw)] border-0 bg-background p-0 text-foreground shadow-2xl backdrop:bg-foreground/40"
+        className="store-menu-dialog fixed inset-0 m-0 h-dvh max-h-none w-screen max-w-none border-0 bg-background p-0 text-foreground shadow-2xl backdrop:bg-foreground/45"
         onClick={(event) => {
           if (event.target === event.currentTarget) dialog.current?.close();
         }}
       >
-        <div className="flex items-center justify-between border-b border-border px-5 py-5">
+        <div className="flex items-center justify-between border-b border-border px-5 py-4">
           <Logo />
           <Button
             type="button"
@@ -43,27 +43,66 @@ export function MobileMenu({ nav }: { nav: NavItem[] }) {
             <X />
           </Button>
         </div>
-        <nav aria-label="Mobile navigation" className="grid gap-1 p-5">
-          {nav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => dialog.current?.close()}
-              className="border-b border-border/70 py-4 font-serif text-2xl"
-            >
-              {item.title}
+        <nav
+          aria-label="Mobile navigation"
+          className="h-[calc(100dvh-4.5rem)] overflow-y-auto px-5 pt-4 pb-[max(2rem,env(safe-area-inset-bottom))]"
+        >
+          <div className="flex gap-4 border-b border-border py-3 text-sm">
+            <Link href="/shop" onClick={() => dialog.current?.close()} className="font-medium">
+              Shop all
             </Link>
-          ))}
-          <Link href="/login" className="border-b border-border/70 py-4 font-serif text-2xl">
-            Account
-          </Link>
+            <Link
+              href="/shop?sort=newest"
+              onClick={() => dialog.current?.close()}
+              className="text-muted-foreground"
+            >
+              New arrivals
+            </Link>
+          </div>
+          <div className="divide-y divide-border">
+            {groups.map((group) => (
+              <details key={group.title} className="group">
+                <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between font-serif text-xl [&::-webkit-details-marker]:hidden">
+                  {group.title}
+                  <ChevronDown className="size-4 transition-transform group-open:rotate-180" />
+                </summary>
+                <ul className="grid grid-cols-2 gap-1 pb-4">
+                  {group.items.map((item) => (
+                    <li key={item.href}>
+                      <Link
+                        href={item.href}
+                        onClick={() => dialog.current?.close()}
+                        className="flex min-h-11 items-center py-2 text-sm text-muted-foreground"
+                      >
+                        {item.title}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            ))}
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-2 border-t border-border pt-4">
+            <Link
+              href="/login"
+              onClick={() => dialog.current?.close()}
+              className="flex min-h-11 items-center text-sm"
+            >
+              Account
+            </Link>
+            <Link
+              href="/wishlist"
+              onClick={() => dialog.current?.close()}
+              className="flex min-h-11 items-center text-sm"
+            >
+              Wishlist
+            </Link>
+          </div>
           <Link
-            href="/account/wishlist"
-            className="border-b border-border/70 py-4 font-serif text-2xl"
+            href="/policies/shipping"
+            onClick={() => dialog.current?.close()}
+            className="mt-4 inline-flex min-h-11 items-center text-sm text-muted-foreground"
           >
-            Wishlist
-          </Link>
-          <Link href="/policies/shipping" className="mt-4 text-sm text-muted-foreground">
             Shipping information
           </Link>
         </nav>

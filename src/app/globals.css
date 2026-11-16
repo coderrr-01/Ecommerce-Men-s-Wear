@@ -73,6 +73,48 @@
     animation: badge-pop 220ms ease-out both;
   }
 
+  .announcement-marquee {
+    overflow: hidden;
+  }
+
+  .announcement-track {
+    animation: announcement-scroll 34s linear infinite;
+  }
+
+  .announcement-marquee:hover .announcement-track,
+  .announcement-marquee:focus-within .announcement-track {
+    animation-play-state: paused;
+  }
+
+  @keyframes announcement-scroll {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  .nav-underline {
+    position: relative;
+    text-decoration: none;
+  }
+
+  .nav-underline::after {
+    position: absolute;
+    right: 0;
+    bottom: -0.25rem;
+    left: 0;
+    height: 1px;
+    background: currentColor;
+    content: "";
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 180ms ease-out;
+  }
+
+  .nav-underline:hover::after,
+  .nav-underline:focus-visible::after {
+    transform: scaleX(1);
+  }
+
   .filter-disclosure-content {
     display: none;
   }
@@ -249,5 +291,6 @@
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
+
   }
 }

@@ -6,7 +6,7 @@ import { siteConfig } from "@/config/site.config";
 
 export function SiteFooter() {
   return (
-    <footer className="mt-auto border-t border-border bg-secondary/30">
+    <footer className="mt-auto border-t border-border bg-secondary/30 pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0">
       <div className="mx-auto grid w-full max-w-[1440px] gap-10 px-5 py-14 sm:px-8 md:grid-cols-2 lg:grid-cols-4 lg:px-12 lg:py-16">
         <div className="space-y-4">
           <Logo />
