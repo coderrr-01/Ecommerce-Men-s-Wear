@@ -40,7 +40,7 @@ function buildVariants(productIndex: number, product: (typeof seedProducts)[numb
       const outOfStock = seedNumber % 37 === 0;
 
       return {
-        sku: `MRD-${String(productIndex + 1).padStart(3, "0")}-${size}-${colorCode(color)}`,
+        sku: `DIA-${String(productIndex + 1).padStart(3, "0")}-${size}-${colorCode(color)}`,
         size,
         color: color.name,
         colorHex: color.hex,
@@ -117,26 +117,48 @@ async function seedCatalog() {
   const categoryIds = new Map<string, string>();
 
   for (const [index, category] of seedCategories.entries()) {
+    const parentId = category.parentSlug ? categoryIds.get(category.parentSlug) : null;
+    if (category.parentSlug && !parentId) {
+      throw new Error(`Unknown seed parent category: ${category.parentSlug}`);
+    }
+
     const record = await prisma.category.upsert({
       where: { slug: category.slug },
       update: {
         name: category.name,
         description: category.description,
         imageUrl: imageUrl(category.imageId),
+        parentId,
         sortOrder: index,
         isActive: true,
+        deletedAt: null,
       },
       create: {
         name: category.name,
         slug: category.slug,
         description: category.description,
         imageUrl: imageUrl(category.imageId),
+        parentId,
         sortOrder: index,
         isActive: true,
       },
     });
     categoryIds.set(category.slug, record.id);
   }
+
+  await prisma.category.updateMany({
+    where: { slug: { in: ["outerwear", "ethnic"] }, deletedAt: null },
+    data: { isActive: false },
+  });
+  const retiredProductSlugs = ["handloom-cotton-kurta", "nehru-jacket", "kurta-churidar-set"];
+  await prisma.product.updateMany({
+    where: { slug: { in: retiredProductSlugs }, deletedAt: null },
+    data: { isActive: false },
+  });
+  await prisma.productVariant.updateMany({
+    where: { product: { is: { slug: { in: retiredProductSlugs } } }, deletedAt: null },
+    data: { isActive: false, stock: 0 },
+  });
 
   for (const [index, product] of seedProducts.entries()) {
     const categoryId = categoryIds.get(product.categorySlug);
@@ -215,10 +237,11 @@ async function seedCatalog() {
         await tx.productVariant.updateMany({
           where: {
             productId: record.id,
-            sku: {
-              startsWith: `MRD-${String(index + 1).padStart(3, "0")}-`,
-              notIn: variants.map((variant) => variant.sku),
-            },
+            OR: [
+              { sku: { startsWith: `DIA-${String(index + 1).padStart(3, "0")}-` } },
+              { sku: { startsWith: `MRD-${String(index + 1).padStart(3, "0")}-` } },
+            ],
+            sku: { notIn: variants.map((variant) => variant.sku) },
           },
           data: { isActive: false, stock: 0 },
         });
@@ -328,9 +351,9 @@ async function main() {
   await seedStoreContent();
 
   const [categories, products, variants, images, admin, customer] = await Promise.all([
-    prisma.category.count({ where: { deletedAt: null } }),
-    prisma.product.count({ where: { deletedAt: null } }),
-    prisma.productVariant.count({ where: { deletedAt: null } }),
+    prisma.category.count({ where: { deletedAt: null, isActive: true } }),
+    prisma.product.count({ where: { deletedAt: null, isActive: true } }),
+    prisma.productVariant.count({ where: { deletedAt: null, isActive: true } }),
     prisma.productImage.count({ where: { deletedAt: null } }),
     prisma.user.findFirst({
       where: { email: ADMIN_EMAIL, role: "ADMIN", deletedAt: null },
