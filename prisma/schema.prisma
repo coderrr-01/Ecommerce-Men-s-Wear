@@ -50,6 +50,11 @@ enum PaymentProvider {
   MOCK
 }
 
+enum OrderPaymentMethod {
+  WHATSAPP
+  COD
+}
+
 enum AddressType {
   SHIPPING
   BILLING
@@ -86,6 +91,8 @@ model User {
   reviews        Review[]
   wishlist       Wishlist[]
   stockMovements StockMovement[]
+  statusChanges  OrderStatusHistory[] @relation("OrderStatusChangedBy")
+  orderNotes     OrderInternalNote[]  @relation("OrderInternalNoteAuthor")
 
   @@index([role])
   @@index([deletedAt])
@@ -274,51 +281,106 @@ model CartItem {
 }
 
 model Order {
-  id              String      @id @default(cuid())
-  orderNumber     String      @unique
-  userId          String?
-  status          OrderStatus @default(PENDING)
-  subtotal        Int
-  discountTotal   Int         @default(0)
-  shippingTotal   Int         @default(0)
-  taxTotal        Int         @default(0)
-  grandTotal      Int
-  currency        String      @default("INR")
-  couponId        String?
-  shippingAddress Json
-  billingAddress  Json?
-  customerNote    String?
-  adminNote       String?
-  placedAt        DateTime    @default(now())
-  cancelledAt     DateTime?
-  deliveredAt     DateTime?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  id                  String              @id @default(cuid())
+  orderNumber         String              @unique
+  whatsappToken       String?             @unique
+  idempotencyKey      String?             @unique
+  checkoutSessionHash String?
+  userId              String?
+  customerName        String?
+  customerPhone       String?
+  status              OrderStatus         @default(PENDING)
+  paymentMethod       OrderPaymentMethod?
+  subtotal            Int
+  discountTotal       Int                 @default(0)
+  shippingTotal       Int                 @default(0)
+  taxTotal            Int                 @default(0)
+  grandTotal          Int
+  currency            String              @default("INR")
+  couponId            String?
+  shippingAddress     Json
+  billingAddress      Json?
+  customerNote        String?
+  adminNote           String?
+  trackingNumber      String?
+  courierName         String?
+  trackingUrl         String?
+  invoiceNumber       String?             @unique
+  placedAt            DateTime            @default(now())
+  stockCommittedAt    DateTime?
+  cancelledAt         DateTime?
+  deliveredAt         DateTime?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
 
-  user     User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
-  coupon   Coupon?     @relation(fields: [couponId], references: [id], onDelete: SetNull)
-  items    OrderItem[]
-  payments Payment[]
+  user          User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
+  coupon        Coupon?              @relation(fields: [couponId], references: [id], onDelete: SetNull)
+  items         OrderItem[]
+  payments      Payment[]
+  statusHistory OrderStatusHistory[]
+  internalNotes OrderInternalNote[]
 
   @@index([userId, createdAt])
+  @@index([customerPhone, createdAt])
   @@index([status])
   @@index([placedAt])
   @@map("orders")
 }
 
-model OrderItem {
-  id        String  @id @default(cuid())
+model OrderStatusHistory {
+  id          String       @id @default(cuid())
+  orderId     String
+  fromStatus  OrderStatus?
+  toStatus    OrderStatus
+  changedById String?
+  note        String?      @db.VarChar(500)
+  createdAt   DateTime     @default(now())
+
+  order     Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  changedBy User? @relation("OrderStatusChangedBy", fields: [changedById], references: [id], onDelete: SetNull)
+
+  @@index([orderId, createdAt])
+  @@index([changedById, createdAt])
+  @@map("order_status_history")
+}
+
+model OrderInternalNote {
+  id        String   @id @default(cuid())
   orderId   String
-  productId String?
-  variantId String?
-  name      String
-  sku       String
-  size      String
-  color     String
-  price     Int
-  quantity  Int
-  total     Int
-  imageUrl  String?
+  authorId  String
+  note      String   @db.VarChar(2000)
+  createdAt DateTime @default(now())
+
+  order  Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  author User  @relation("OrderInternalNoteAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+
+  @@index([orderId, createdAt])
+  @@index([authorId, createdAt])
+  @@map("order_internal_notes")
+}
+
+model InvoiceSequence {
+  year      Int      @id
+  nextValue Int      @default(1)
+  updatedAt DateTime @updatedAt
+
+  @@map("invoice_sequences")
+}
+
+model OrderItem {
+  id          String  @id @default(cuid())
+  orderId     String
+  productId   String?
+  productSlug String?
+  variantId   String?
+  name        String
+  sku         String
+  size        String
+  color       String
+  price       Int
+  quantity    Int
+  total       Int
+  imageUrl    String?
 
   order   Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product Product?        @relation(fields: [productId], references: [id], onDelete: SetNull)

@@ -10,6 +10,7 @@ import {
   removeCartItem,
   updateCartItemQuantity,
 } from "@/features/cart/services/cart.service";
+import { getCartOwner } from "@/features/cart/guest-session";
 import { initialCartActionState, type CartActionState } from "@/features/cart/types";
 import { getCurrentUser } from "@/features/auth/services/session.service";
 import { AppError, ValidationError } from "@/lib/errors";
@@ -34,17 +35,11 @@ export async function addToCartAction(
   }
 
   const user = await getCurrentUser();
-  if (!user) {
-    return {
-      status: "error",
-      message: "Sign in to add items to your bag.",
-      requiresAuth: true,
-    };
-  }
-
   try {
-    await addItemToCart(user.id, parsed.data);
-    const cart = await getCart(user.id);
+    const owner = await getCartOwner(user?.id, true);
+    if (!owner) throw new Error("Cart session could not be created.");
+    await addItemToCart(owner, parsed.data);
+    const cart = await getCart(owner);
     revalidatePath("/cart");
 
     return {
@@ -57,7 +52,7 @@ export async function addToCartAction(
       return { status: "error", message: error.message };
     }
 
-    logger.error("cart.add_failed", { userId: user.id, error });
+    logger.error("cart.add_failed", { userId: user?.id, error });
     return {
       status: "error",
       message: "We could not add this item. Please try again.",
@@ -71,7 +66,8 @@ function redirectToCartWithError(message: string): never {
 
 export async function updateCartItemAction(formData: FormData) {
   const user = await getCurrentUser();
-  if (!user) redirect("/login?redirectTo=/cart");
+  const owner = await getCartOwner(user?.id);
+  if (!owner) redirect("/cart");
 
   const itemId = String(formData.get("itemId") ?? "");
   const quantity = Number(formData.get("quantity"));
@@ -82,10 +78,10 @@ export async function updateCartItemAction(formData: FormData) {
       throw new ValidationError("Choose a quantity between 1 and 10.");
     }
 
-    await updateCartItemQuantity(user.id, itemId, quantity);
+    await updateCartItemQuantity(owner, itemId, quantity);
   } catch (error) {
     if (error instanceof AppError) redirectToCartWithError(error.message);
-    logger.error("cart.update_failed", { userId: user.id, error });
+    logger.error("cart.update_failed", { userId: user?.id, error });
     redirectToCartWithError("We could not update your bag. Please try again.");
   }
 
@@ -95,16 +91,17 @@ export async function updateCartItemAction(formData: FormData) {
 
 export async function removeCartItemAction(formData: FormData) {
   const user = await getCurrentUser();
-  if (!user) redirect("/login?redirectTo=/cart");
+  const owner = await getCartOwner(user?.id);
+  if (!owner) redirect("/cart");
 
   const itemId = String(formData.get("itemId") ?? "");
 
   try {
     if (!itemId) throw new ValidationError("Cart item is missing.");
-    await removeCartItem(user.id, itemId);
+    await removeCartItem(owner, itemId);
   } catch (error) {
     if (error instanceof AppError) redirectToCartWithError(error.message);
-    logger.error("cart.remove_failed", { userId: user.id, error });
+    logger.error("cart.remove_failed", { userId: user?.id, error });
     redirectToCartWithError("We could not remove this item. Please try again.");
   }
 

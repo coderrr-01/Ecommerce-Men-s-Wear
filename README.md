@@ -57,20 +57,25 @@ Override these with `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `SEED_CUSTOMER_EM
 - Guest wishlist and recently viewed products stored locally in the browser; PWA manifest and generated diamond icon.
 - Account and admin shells; role-guarded category/product/variant management, product image
   uploads, audited inventory adjustments/CSV export, and live dashboard metrics.
+- Guest and signed-in WhatsApp order requests with server-repriced order snapshots, token-protected
+  confirmation links, and admin fulfilment/stock audit flow. No online payment is collected.
 - Provider adapters for payment (mock/Razorpay), storage (Cloudinary) and email/SMS (console/Resend).
 - Unit tests for money formatting, redirects, catalogue URLs, cart totals, validation and stock rules.
 - Passed `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm build`.
 
 ## Current limitations
 
-- Checkout, order creation, payment capture/webhooks and transactional stock decrement are not wired yet.
-- Checkout remains disabled; cart changes/removals are handled on the cart page.
+- Online payment capture/webhooks, refunds, tax/coupons, stock reservation and account order history
+  are not implemented. Stock is committed when staff confirms an order request.
 - Newsletter signup is explicitly marked as coming soon. Search suggestions are category/recent-query based; variant-aware product suggestions and colour filtering need richer catalog DTOs.
 - Guest wishlist and recently viewed data are browser/device-specific and do not sync to accounts.
 - Password reset email is not enabled.
 - Admin catalog fields and stock-audit tables are tracked in the generated migration
   `20261113114155_admin_catalog_stock_movements`; database verification status is recorded in
   [progress](docs/PROGRESS.md).
+- WhatsApp checkout schema changes are additive but require the owner to generate the dev migration
+  with `pnpm exec prisma migrate dev --name whatsapp_checkout`. Set the shop WhatsApp number and
+  production URL in `src/config/site.config.ts` before enabling order requests.
 
 ## Documentation
 

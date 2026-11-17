@@ -6,15 +6,15 @@
 database-backed `requireRole(["ADMIN", "STAFF"])`. Every admin server action and API route also
 checks access on the server; proxy redirects are not an authorization boundary.
 
-| Capability | ADMIN | STAFF |
-| --- | --- | --- |
-| View dashboard and inventory | Yes | Yes |
-| Create/update categories | Yes | Yes |
-| Create/update products and variants | Yes | Yes |
-| Upload, reorder and edit image alt text | Yes | Yes |
-| Adjust inventory | Yes | Yes |
-| Delete categories, products or images | Yes | No |
-| Manage users, settings or roles | Planned | No |
+| Capability                              | ADMIN   | STAFF |
+| --------------------------------------- | ------- | ----- |
+| View dashboard and inventory            | Yes     | Yes   |
+| Create/update categories                | Yes     | Yes   |
+| Create/update products and variants     | Yes     | Yes   |
+| Upload, reorder and edit image alt text | Yes     | Yes   |
+| Adjust inventory                        | Yes     | Yes   |
+| Delete categories, products or images   | Yes     | No    |
+| Manage users, settings or roles         | Planned | No    |
 
 Authorization failures use the shared `ApiResponse` error shape with `UNAUTHORIZED` or `FORBIDDEN`.
 The guard reloads the user from the database, so inactive, deleted or role-changed accounts lose
@@ -30,8 +30,10 @@ access immediately.
   management; the edit screen includes the image manager.
 - `/admin/inventory` — searchable and state-filtered variant inventory with inline/bulk stock
   updates and CSV export.
-- `/admin/orders`, `/admin/customers` and `/admin/settings` — placeholders until their respective
-  workflows are implemented.
+- `/admin/orders` and `/admin/orders/{id}` — searchable, status-filtered and paginated order
+  requests with customer/item snapshots, WhatsApp chat and guarded fulfilment transitions.
+- `/admin/customers` and `/admin/settings` — placeholders until their respective workflows are
+  implemented.
 
 The shared shell provides responsive navigation, breadcrumbs, current-user menu, sign-out and
 Sonner notifications. Admin interfaces reuse the tokens and primitives described in
@@ -52,6 +54,7 @@ controls explain the missing provider instead of crashing.
 
 ## Remaining work
 
-Order lifecycle/refunds, customer administration, settings, coupons, banners, review moderation and
-size-guide administration are not implemented. See [API.md](../API.md) for action contracts and
+Online payment/refunds, customer administration, settings, coupons, banners, review moderation and
+size-guide administration are not implemented. Order stock is committed on confirmation, not
+placement. See [orders.md](./orders.md), [API.md](../API.md) for action contracts and
 [PROGRESS.md](../PROGRESS.md) for verification status.

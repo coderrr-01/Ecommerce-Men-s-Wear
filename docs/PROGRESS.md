@@ -1,12 +1,66 @@
 # Implementation progress
 
-Last updated: 2026-11-16
+Last updated: 2026-11-17
 
 ## Status
 
-Phase 2 Admin Catalog Management and the Diamond Selection storefront refresh are implemented:
-categories, products/variants, product images, inventory operations, dashboard metrics, responsive
-storefront motion and server-side role checks. Checkout and order placement remain disabled.
+Phase 2 Admin Catalog Management and the Diamond Selection storefront refresh are implemented.
+WhatsApp order requests, guest cart sessions and admin fulfilment UI are implemented in code;
+the WhatsApp checkout migration has since been applied locally. Phase 5 Part A adds customer order
+history, tracking, status history and invoices; see its verification status below.
+
+## Phase 5 Part A order experience (2026-11-17)
+
+- Customer order list and owned order details are available at `/account/orders`; guest token order
+  pages show the same status timeline. Customer data access is scoped to the signed-in user or the
+  unguessable guest token.
+- `OrderStatusHistory` is written atomically on order creation and every allowed status transition.
+  Separate admin-only notes are excluded from customer and guest query selections.
+- Staff/admin can set tracking details, add private notes, export orders by date/status and open
+  status-specific customer WhatsApp messages.
+- Confirmed-or-later invoices are downloadable by staff/admin, the owning customer or a guest with a
+  valid order token. Annual invoice allocation uses a transactional counter and unique invoice
+  number. Existing orders without history show inferred progress without fabricated event dates.
+- PDFKit is used on the Node.js runtime with traced OFL Noto font assets for rupee, Hindi and
+  Gujarati text. Vercel runtime behavior still needs post-deploy verification.
+- `pnpm lint`, `pnpm typecheck`, `pnpm test` (18 files, 72 tests) and `pnpm build` pass. The PDF
+  test generated/read a local 35-item multi-page document and checked amount, rupee and Indian
+  script output paths. The production trace includes all font/license assets.
+- PostgreSQL is reachable with three prior migrations applied. No Phase 5 migration was generated
+  in this non-interactive environment, so order pages/actions/invoice downloads have not been
+  exercised against PostgreSQL or in the browser. Vercel runtime also remains unverified.
+- Migration blocker: `pnpm prisma migrate dev --name phase5_order_experience` connected to the
+  development PostgreSQL database but was refused because this execution environment is
+  non-interactive. It generated no migration. Run it in an interactive development terminal; do not
+  hand-write migration SQL or use `db push`.
+
+## WhatsApp checkout and orders (2026-11-17)
+
+- Added guest cart ownership via an HTTP-only session cookie without changing authentication.
+- Added `/checkout`, server-side active product/variant/stock and price validation, atomic order/item
+  snapshots and cart clearing, a unique human-readable order number, retry-safe idempotency and a
+  token-protected guest confirmation route.
+- Added compact/capped WhatsApp message generation, order summary and copy fallback. WhatsApp
+  launches only from an explicit link.
+- Added searchable/status-filtered/paginated admin orders and transactionally guarded fulfilment:
+  conditional stock decrement and movement on confirm, stock restoration on eligible cancel.
+- Dashboard order and pending counts already use live database counts.
+- Added unit coverage for message encoding/length, DB-price repricing, totals, order number,
+  transitions and stock commit/restoration.
+- No dependencies added. Payment provider and auth implementation were not changed.
+
+### Verification and blockers
+
+- `pnpm lint`, `pnpm typecheck`, `pnpm test` (15 files, 62 tests) and `pnpm build` pass.
+- Guest product add-to-cart, cart persistence and checkout page/summary were exercised in the
+  running browser. No order was placed because the configured WhatsApp number is the all-zero
+  placeholder. The owner later generated/applied `20261117063053_whatsapp_checkout` interactively
+  and regenerated Prisma Client after stopping the project dev server.
+- Phase 5 Part A's separate migration remains pending. In this execution Prisma reached local
+  PostgreSQL but refused `migrate dev` because the command session is non-interactive; no migration
+  SQL was generated. Run it in an interactive development terminal and review for additive changes.
+- No order creation, success-link verification, admin confirmation/cancellation, stock movement,
+  or production migration was verified against the real database yet.
 
 ## Admin scope delivered
 
@@ -78,14 +132,14 @@ Previous storefront responsive and interaction checks cover the pre-refresh UI o
 
 ## Known gaps
 
-- Order workflows, payment capture/webhooks, refunds and customer/settings management are not
-  implemented.
-- Checkout remains disabled; order placement must perform conditional transactional stock
-  decrement before it can be enabled.
+- Payment capture/webhooks, refunds and customer/settings management are not implemented.
+- WhatsApp order placement is implemented; inventory is deliberately not reserved until admin
+  confirmation. Payment capture and webhooks remain disabled.
 - The denied server-action replay returned a browser redirect response; its typed error body was not
   independently inspected. Each mutation still invokes `requireRole` server-side.
 - Production migration deployment still requires the release procedure and a database backup.
 - Newsletter enrollment is disabled; guest wishlist/recent history are local to the browser. Quick
   view cannot select variants or add directly because listing DTOs lack variant data, price
   filtering is current-page-only, and colour filters are unavailable.
-- Exact garment measurements and checkout/order workflows are not implemented.
+- Exact garment measurements, online payment, order email and account order history are not
+  implemented.

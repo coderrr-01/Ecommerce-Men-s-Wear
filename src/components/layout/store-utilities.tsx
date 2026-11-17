@@ -20,7 +20,7 @@ export function StoreUtilities() {
   const reducedMotion = useReducedMotion();
   const whatsappNumber = siteConfig.contact.whatsapp.replace(/\D/g, "");
   const hasWhatsappNumber = whatsappNumber.length > 6 && !/^91?0+$/.test(whatsappNumber);
-  const isCheckout = pathname.startsWith("/checkout");
+  const isCheckout = pathname.startsWith("/checkout") || pathname.startsWith("/order/");
 
   useMotionValueEvent(scrollY, "change", (value) => setShowBackToTop(value > 400));
 

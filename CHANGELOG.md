@@ -2,6 +2,49 @@
 
 All notable changes to Diamond Selection are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow SemVer.
 
+## 2026-11-17 — Phase 5 Part A order experience
+
+### Added
+
+- Added owner-scoped account order history and detail pages with status timelines; guest order links
+  now show the same timeline and customer-visible shipping tracking.
+- Added transactional status-history entries, staff-only internal notes, tracking details, filtered
+  order CSV export and status-specific WhatsApp messages.
+- Added protected invoice PDF downloads with transactional annual numbering, amount-in-words and
+  config-driven seller details. Added PDFKit and OFL-licensed Noto fonts for rupee and Indian-script
+  text support.
+
+### Verification
+
+- `pnpm lint`, `pnpm typecheck`, `pnpm test` (18 files, 72 tests) and `pnpm build` pass.
+- A local 35-item PDF was generated and read back from a temporary file; it contains multiple pages,
+  Unicode font maps, rupee amounts, amount-in-words and Hindi/Gujarati font runs. Build tracing
+  includes the font files.
+- PostgreSQL is reachable with three existing migrations applied. The new Phase 5 migration could
+  not be generated in this non-interactive command environment; browser/database order workflows
+  and Vercel runtime remain unverified.
+
+## 2026-11-17 — WhatsApp checkout and orders
+
+### Added
+
+- Added signed-in and guest cart checkout, server-side variant/price/stock validation, atomic order
+  and item snapshots, idempotency and token-protected guest confirmation links.
+- Added a length-limited, encoded WhatsApp order message with explicit click-to-chat and copy
+  fallback. No online payment is collected.
+- Added searchable/paginated admin order list and details, validated status transitions, transactional
+  stock deduction on confirmation and stock restoration on eligible cancellation.
+- Added unit tests for message output/encoding/length, DB-price totals, order number uniqueness,
+  status transitions and stock changes. No dependencies added.
+
+### Verification
+
+- Guest cart addition, cart persistence and checkout summary rendered in the running browser.
+- `pnpm lint`, `pnpm typecheck`, `pnpm test` (15 files, 62 tests) and `pnpm build` pass.
+- Local PostgreSQL was reachable, but `prisma migrate dev` requires the owner's interactive VS Code
+  terminal. No migration or order lifecycle was verified against the database.
+- Configure the shop WhatsApp number and canonical URL before order submission.
+
 ## 2026-11-16 — Storefront intro preloader
 
 ### Added

@@ -23,6 +23,9 @@ export const siteConfig = {
   logo: {
     wordmark: brandName.toUpperCase(),
   },
+  invoice: {
+    prefix: "INV",
+  },
 
   intro: {
     enabled: true,
@@ -99,7 +102,8 @@ export const siteConfig = {
   contact: {
     email: "care@diamondselection.example",
     phone: "+91 00000 00000",
-    whatsapp: "+910000000000",
+    whatsapp: "+918780551987",
+    countryCallingCode: "91",
     hours: "Mon–Sat, 10:00–19:00 IST",
   },
 
@@ -308,6 +312,8 @@ export const siteConfig = {
     label: "GST",
     rateBps: 500,
     pricesIncludeTax: true,
+    gstin: "234sgf3434",
+    pan: "ASD123SFE",
   },
 
   policies: {

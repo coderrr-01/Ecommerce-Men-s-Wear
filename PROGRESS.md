@@ -1,37 +1,93 @@
 # Progress
 
-Last updated: 2026-11-16
+Last updated: 2026-11-17
 
 ## Status
 
 Foundation, Phase 2 admin catalog management and the Diamond Selection storefront refresh are
-implemented. Storefront browsing, guest wishlist/recent history and signed-in cart flows are in
-place. Checkout remains intentionally disabled.
+implemented. WhatsApp checkout, admin fulfilment and Phase 5 Part A customer order experience are
+implemented in code; see the verification notes below before production use.
 
 ## Completed
 
-| Area            | State             | Notes                                                                             |
-| --------------- | ----------------- | --------------------------------------------------------------------------------- |
-| Project tooling | Done              | Next 16.4, TS strict, Tailwind v4, ESLint, Prettier, Vitest, pnpm approvals       |
-| Config/env      | Done              | Zod env validation; brand, copy, contact, commerce and seed defaults centralised  |
-| Database schema | Done              | 18 models, enums, indexes, soft deletes, generated migrations                     |
-| Seed            | Done              | 13 categories, 30 products, users, coupons, banner, settings; production guard    |
-| Auth            | Done              | Credentials, register, logout, JWT roles, DB-backed guards, proxy                 |
-| UI shell        | Done              | Primitives, header/footer, account/admin layouts, policy pages                    |
-| Storefront UI   | Done              | Diamond Selection brand, responsive shell, motion, PWA metadata and utilities     |
-| Catalogue       | Done              | Home, search suggestions, filters, quick view, gallery and local recent strip     |
-| Cart            | Done (signed-in)  | Transactional merges, stock checks, line-item drawer and totals                   |
-| Admin dashboard | Done              | Product/status/variant/stock/customer/order metrics; top-ten low-stock links      |
-| Admin catalog   | Done              | Category, product, variant and Cloudinary image management; server role guards    |
-| Inventory       | Done              | Filtered stock list, transactional adjustments, audit records and CSV export      |
-| Health          | Done              | DB check, 200/503                                                                 |
-| Providers       | Done (interfaces) | Mock/Razorpay, Cloudinary, console/Resend, console SMS                            |
-| Tests           | Done              | 12 files, 48 passing unit tests                                                   |
-| Quality gates   | Done              | lint, typecheck, 48 unit tests and production build pass                          |
-| Browser checks  | Partial           | Home, shop, product, wishlist and mobile overlays checked; see verification notes |
-| Documentation   | Done              | Includes interaction guide, updated design system, progress and changelog         |
+| Area             | State                | Notes                                                                              |
+| ---------------- | -------------------- | ---------------------------------------------------------------------------------- |
+| Project tooling  | Done                 | Next 16.4, TS strict, Tailwind v4, ESLint, Prettier, Vitest, pnpm approvals        |
+| Config/env       | Done                 | Zod env validation; brand, copy, contact, commerce and seed defaults centralised   |
+| Database schema  | Implemented (verify) | 21 models; Phase 5 Part A migration still needs interactive generation             |
+| Seed             | Done                 | 13 categories, 30 products, users, coupons, banner, settings; production guard     |
+| Auth             | Done                 | Credentials, register, logout, JWT roles, DB-backed guards, proxy                  |
+| UI shell         | Done                 | Primitives, header/footer, account/admin layouts, policy pages                     |
+| Storefront UI    | Done                 | Diamond Selection brand, responsive shell, motion, PWA metadata and utilities      |
+| Catalogue        | Done                 | Home, search suggestions, filters, quick view, gallery and local recent strip      |
+| Cart             | Done                 | Signed-in and cookie-backed guest carts, transactional merges and stock checks     |
+| WhatsApp orders  | Implemented (verify) | Guest checkout, order snapshots, token lookup, admin fulfilment and stock audit    |
+| Order experience | Implemented (verify) | Customer history, status history, tracking, admin notes/CSV and protected invoices |
+| Admin dashboard  | Done                 | Product/status/variant/stock/customer/order metrics; top-ten low-stock links       |
+| Admin catalog    | Done                 | Category, product, variant and Cloudinary image management; server role guards     |
+| Inventory        | Done                 | Filtered stock list, transactional adjustments, audit records and CSV export       |
+| Health           | Done                 | DB check, 200/503                                                                  |
+| Providers        | Done (interfaces)    | Mock/Razorpay, Cloudinary, console/Resend, console SMS                             |
+| Tests            | Done                 | 18 files, 72 passing unit tests                                                    |
+| Quality gates    | Done                 | lint, typecheck, unit tests and production build pass                              |
+| Browser checks   | Partial              | Storefront checks are historical; Phase 5 order pages await migration/app testing  |
+| Documentation    | Done                 | Feature, API, database, architecture and deployment notes updated                  |
+
+## Phase 5 Part A — Order experience (2026-11-17)
+
+- Added `/account/orders` and owned order details with order snapshots, totals, delivery address,
+  tracking data and a status timeline. Guest token order pages share the timeline and tracking
+  presentation; customer-facing queries do not select internal admin notes.
+- Every new order and status transition records `OrderStatusHistory` in the same transaction as the
+  order/status write. Admin-only notes use a separate table. Tracking is validated as HTTPS.
+- Added date/status-filtered admin order CSV and WhatsApp messages for confirmation, shipment with
+  tracking, and delivery.
+- Added authorized invoice PDFs for staff/admin, owning customers and token-authorized guests after
+  confirmation. A per-year counter row and unique invoice-number field are updated in the same
+  transaction; retries reuse the order's assigned number and roll back unassigned counters.
+- Added PDFKit and bundled OFL Noto fonts for Latin, Devanagari, Gujarati and rupee glyphs. PDFKit
+  is externalized for the Node.js route; Next output tracing includes the font files.
+- The Phase 5 schema migration has not been generated/applied. `pnpm prisma migrate dev
+--name phase5_order_experience` reached local PostgreSQL but Prisma refused because this command
+  session is non-interactive; no migration SQL was written. Generate it in an interactive
+  development terminal and review for additive changes only.
+- Local PDF generation and lint/typecheck/test/build results are recorded after validation. Vercel
+  runtime behavior requires a deployment to verify.
+- Configure the invoice prefix, legal name/address and GSTIN/PAN before issuing production invoices.
+
+### Phase 5 Part A verification (2026-11-17)
+
+- `pnpm lint`, `pnpm typecheck`, `pnpm test` (18 files, 72 tests) and `pnpm build` pass.
+- `pnpm exec prisma validate` passes. PostgreSQL is reachable and `prisma migrate status`
+  recognizes three existing migrations as applied. The Phase 5 Part A migration is not generated
+  because this command environment is non-interactive; no order-experience schema changes have
+  been applied or exercised in the database.
+- A local 35-item invoice PDF was generated and read back from a temporary file. The PDF has
+  multiple pages and ToUnicode maps; the rendering test checked invoice/order text, formatted
+  rupee amounts, amount-in-words, Hindi/Gujarati font runs and item details. Next's production
+  trace includes all bundled font/license assets.
+- Browser verification of account orders, guest timelines, admin upgrades and invoice downloads
+  remains blocked until the interactive schema migration is generated/applied. Vercel runtime
+  behavior also needs post-deploy verification.
 
 ## Verification
+
+WhatsApp checkout (2026-11-17):
+
+- Guest product add-to-cart persisted in the browser; `/cart` displayed the item and checkout
+  navigated to `/checkout` with delivery form and order summary. This used the existing local
+  database/catalog; no order was submitted.
+- `pnpm lint`, `pnpm typecheck`, `pnpm test` (15 files, 62 tests) and `pnpm build` pass.
+- `prisma migrate status` connected to local PostgreSQL and found the existing schema up to date.
+  `prisma migrate dev --name whatsapp_checkout` could not run in this non-interactive command
+  session; it generated no migration. The owner will run it interactively in VS Code. No order or
+  stock workflow has been verified against the database.
+- The configured shop WhatsApp number is a placeholder, so the order action is intentionally
+  blocked until the number is replaced in `src/config/site.config.ts`.
+- After this historical verification, the owner ran and applied
+  `20261117063053_whatsapp_checkout` and successfully regenerated Prisma Client after stopping the
+  project dev server. The Phase 5 Part A migration remains separate and pending interactive
+  `migrate dev`.
 
 Intro preloader changes:
 
@@ -95,11 +151,13 @@ Not verified for the current storefront change:
 Storefront constraints: newsletter enrollment is disabled; guest wishlist/recent history are local
 to the browser; quick view cannot select variants or add directly because the listing DTO lacks
 variant data; price filtering is current-page-only and colour filtering is unavailable. Exact
-garment measurements and checkout/order workflows are not implemented.
+garment measurements and online-payment workflows are not implemented.
 
 ## Known issues and risks
 
-- Checkout is disabled; there is no order placement, stock decrement transaction, tax/coupon calculation or payment webhook.
+- The order-schema migration, live order creation, admin stock lifecycle and production release
+  have not yet been verified. Tax/coupons, payment capture/webhooks, refunds and account order
+  history remain out of scope.
 - The initial migration is committed; the admin migration was applied locally. Production migration
   deployment still requires the release procedure and a database backup.
 - Store pages are dynamic because the header reads session/cart; this is correct but limits static caching.
@@ -110,13 +168,19 @@ garment measurements and checkout/order workflows are not implemented.
 
 ## Next milestones
 
-### P0 — Checkout and payments
+### P0 — WhatsApp checkout release verification
 
-1. Address selection/creation.
-2. Server-side re-pricing, coupon, tax and shipping calculation.
-3. Transactional order creation plus conditional stock decrement.
-4. Razorpay order creation and verified, idempotent webhook.
-5. Confirmation page and email; account/admin order views.
+1. Generate/apply the additive `whatsapp_checkout` migration interactively on the development DB.
+2. Configure WhatsApp/canonical URL/shipping fields, submit a guest order, validate its URL and
+   message, and verify the cart clears.
+3. Confirm and cancel through admin; verify stock and `StockMovement` changes and role boundaries.
+4. Run all quality gates; apply the committed migration in production after backup/release approval.
+
+### P1 — Online payments
+
+1. Add server-side payment initiation behind the existing `PaymentProvider`.
+2. Add verified, idempotent Razorpay webhooks and refund workflows.
+3. Add tax/coupon rules and customer order history as separate reviewed changes.
 
 ### P1 — Account completeness
 

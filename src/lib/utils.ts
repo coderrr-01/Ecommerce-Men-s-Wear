@@ -58,9 +58,13 @@ export function slugify(value: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
-export function generateOrderNumber(prefix = "ORD"): string {
-  const date = new Date().toISOString().slice(0, 10).replaceAll("-", "");
-  const random = crypto.randomUUID().replaceAll("-", "").slice(0, 6).toUpperCase();
+export function generateOrderNumber(
+  prefix = "ORD",
+  now = new Date(),
+  randomId = crypto.randomUUID(),
+): string {
+  const date = now.toISOString().slice(0, 10).replaceAll("-", "");
+  const random = randomId.replaceAll("-", "").slice(0, 8).toUpperCase();
   return `${prefix}-${date}-${random}`;
 }
 

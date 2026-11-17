@@ -9,6 +9,9 @@ Documents for implemented slices and known gaps.
 - [Admin panel](admin-panel.md)
 - [Inventory management](inventory.md)
 - [Checkout and orders](checkout-and-orders.md)
+- [WhatsApp checkout](whatsapp-checkout.md)
+- [Orders](orders.md)
+- [Invoices](invoices.md)
 - [Wishlist, reviews and addresses](account.md)
 - [Home intro preloader](intro-preloader.md)
 

@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { removeCartItemAction } from "@/features/cart/actions/cart.actions";
 import { CartQuantityStepper } from "@/features/cart/components/cart-quantity-stepper";
 import { getCart } from "@/features/cart/services/cart.service";
-import { requireUser } from "@/features/auth/services/session.service";
+import { getCurrentUser } from "@/features/auth/services/session.service";
+import { getCartOwner } from "@/features/cart/guest-session";
+import { calculateCartTotals } from "@/features/cart/utils";
 import { siteConfig } from "@/config/site.config";
 import { formatPrice } from "@/lib/utils";
 import { ScrollReveal } from "@/components/shared/scroll-reveal";
@@ -17,8 +19,12 @@ interface CartPageProps {
 }
 
 export default async function CartPage({ searchParams }: CartPageProps) {
-  const user = await requireUser("/cart");
-  const [cart, params] = await Promise.all([getCart(user.id), searchParams]);
+  const user = await getCurrentUser();
+  const owner = await getCartOwner(user?.id);
+  const [cart, params] = await Promise.all([
+    owner ? getCart(owner) : Promise.resolve(calculateCartTotals([])),
+    searchParams,
+  ]);
   const error = typeof params.error === "string" ? params.error : null;
 
   return (
@@ -175,11 +181,11 @@ export default async function CartPage({ searchParams }: CartPageProps) {
               </p>
             )}
 
-            <Button type="button" size="lg" className="mt-6 w-full" disabled>
-              Checkout coming soon
+            <Button asChild size="lg" className="mt-6 w-full">
+              <Link href="/checkout">Checkout</Link>
             </Button>
             <p className="mt-3 text-center text-xs text-muted-foreground">
-              {siteConfig.shipping.returnsWindowDays}-day returns · Secure payments
+              {siteConfig.shipping.returnsWindowDays}-day returns · No online payment required
             </p>
 
             <Link

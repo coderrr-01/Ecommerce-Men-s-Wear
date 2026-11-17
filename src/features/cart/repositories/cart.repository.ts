@@ -2,10 +2,15 @@ import "server-only";
 
 import { InsufficientStockError, NotFoundError } from "@/lib/errors";
 import { prisma } from "@/lib/db";
+import type { CartOwner } from "@/features/cart/types";
 
-export async function findCartByUserId(userId: string) {
+function cartOwnerWhere(owner: CartOwner) {
+  return "userId" in owner ? { userId: owner.userId } : { sessionId: owner.sessionId };
+}
+
+export async function findCartByOwner(owner: CartOwner) {
   return prisma.cart.findUnique({
-    where: { userId },
+    where: cartOwnerWhere(owner),
     select: {
       id: true,
       items: {
@@ -41,16 +46,20 @@ export async function findCartByUserId(userId: string) {
   });
 }
 
-export async function findCartItemCount(userId: string) {
+export async function findCartItemCount(owner: CartOwner) {
   const result = await prisma.cartItem.aggregate({
-    where: { cart: { userId } },
+    where: { cart: cartOwnerWhere(owner) },
     _sum: { quantity: true },
   });
 
   return result._sum.quantity ?? 0;
 }
 
-export async function addOrIncrementCartItem(userId: string, variantId: string, quantity: number) {
+export async function addOrIncrementCartItem(
+  owner: CartOwner,
+  variantId: string,
+  quantity: number,
+) {
   return prisma.$transaction(async (tx) => {
     const variant = await tx.productVariant.findFirst({
       where: {
@@ -70,12 +79,20 @@ export async function addOrIncrementCartItem(userId: string, variantId: string, 
       throw new InsufficientStockError("This item is sold out.");
     }
 
-    const cart = await tx.cart.upsert({
-      where: { userId },
-      create: { userId },
-      update: {},
-      select: { id: true },
-    });
+    const cart =
+      "userId" in owner
+        ? await tx.cart.upsert({
+            where: { userId: owner.userId },
+            create: { userId: owner.userId },
+            update: {},
+            select: { id: true },
+          })
+        : await tx.cart.upsert({
+            where: { sessionId: owner.sessionId },
+            create: { sessionId: owner.sessionId },
+            update: {},
+            select: { id: true },
+          });
 
     const existing = await tx.cartItem.findUnique({
       where: { cartId_variantId: { cartId: cart.id, variantId } },
@@ -110,10 +127,10 @@ export async function addOrIncrementCartItem(userId: string, variantId: string, 
   });
 }
 
-export async function setCartItemQuantity(userId: string, itemId: string, quantity: number) {
+export async function setCartItemQuantity(owner: CartOwner, itemId: string, quantity: number) {
   return prisma.$transaction(async (tx) => {
     const item = await tx.cartItem.findFirst({
-      where: { id: itemId, cart: { userId } },
+      where: { id: itemId, cart: cartOwnerWhere(owner) },
       select: {
         id: true,
         variant: { select: { stock: true } },
@@ -144,9 +161,9 @@ export async function setCartItemQuantity(userId: string, itemId: string, quanti
   });
 }
 
-export async function deleteCartItem(userId: string, itemId: string) {
+export async function deleteCartItem(owner: CartOwner, itemId: string) {
   const result = await prisma.cartItem.deleteMany({
-    where: { id: itemId, cart: { userId } },
+    where: { id: itemId, cart: cartOwnerWhere(owner) },
   });
 
   if (result.count === 0) {

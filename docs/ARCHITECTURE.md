@@ -70,7 +70,16 @@ Business logic must depend on the interfaces, not provider SDKs. Razorpay is imp
 - `AppError` subclasses carry stable API codes and HTTP statuses.
 - `executeAction` wraps non-form server actions and normalises/logs failures.
 - Money is always an integer in paise. Formatting happens only at the presentation boundary with `formatPrice`.
-- Order numbers are human-readable and generated server-side (`ORD-YYYYMMDD-XXXXXX`).
+- Order numbers are generated server-side (`DS-YYYYMMDD-XXXXXXXX`) and protected by a unique
+  database constraint; collisions are retried.
+- WhatsApp checkout creates the pending order/items and clears its user/guest cart transactionally.
+  Stock is decremented when staff confirms the order and restored on eligible cancellation.
+- Guest orders are viewed only through a high-entropy token paired with the human-readable order
+  number; sequential order numbers alone are not authorization.
+- Customer order history is scoped by `userId`; customer invoice queries use an owner-scoped
+  database filter, staff role or guest bearer token and return 404 for unauthorized order numbers.
+- Status history is transactional and separate from admin-only internal notes. Invoice counters
+  and assignments commit together to prevent gaps from retries.
 
 ## Testing
 
@@ -81,10 +90,12 @@ Business logic must depend on the interfaces, not provider SDKs. Razorpay is imp
 
 ## Known gaps
 
-- Checkout/order placement and payment webhooks are not implemented.
-- Stock is validated for cart operations but is not decremented transactionally at order placement because there is no order flow yet.
-- Category/product/variant CRUD, product images, inventory adjustments and dashboard metrics are
-  implemented in the admin feature layers; orders, customer management, settings, wishlist,
-  reviews, address management and password reset remain incomplete.
+- Online payment capture/webhooks, refunds, tax/coupons and stock reservation are not implemented.
+  The current WhatsApp flow records order requests and does not collect money.
+- PDF invoice generation is server-side through PDFKit on Node.js and requires deployment tracing
+  for its bundled OFL fonts.
+- Category/product/variant CRUD, product images, inventory adjustments, order management, dashboard
+  metrics and account order history are implemented in feature layers; customer management,
+  settings, wishlist, reviews, address management and password reset remain incomplete.
 
 See `PROGRESS.md` for the next milestones.

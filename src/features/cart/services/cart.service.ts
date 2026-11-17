@@ -3,15 +3,15 @@ import "server-only";
 import {
   addOrIncrementCartItem,
   deleteCartItem,
-  findCartByUserId,
+  findCartByOwner,
   findCartItemCount,
   setCartItemQuantity,
 } from "@/features/cart/repositories/cart.repository";
-import type { CartData, CartLine } from "@/features/cart/types";
+import type { CartData, CartLine, CartOwner } from "@/features/cart/types";
 import { calculateCartTotals } from "@/features/cart/utils";
 import { PRODUCT_PLACEHOLDER_IMAGE } from "@/config/constants";
 
-type CartRow = NonNullable<Awaited<ReturnType<typeof findCartByUserId>>>;
+type CartRow = NonNullable<Awaited<ReturnType<typeof findCartByOwner>>>;
 
 export function mapCart(row: CartRow | null): CartData {
   const items: CartLine[] = (row?.items ?? []).map((item) => {
@@ -37,26 +37,26 @@ export function mapCart(row: CartRow | null): CartData {
   return calculateCartTotals(items);
 }
 
-export async function getCart(userId: string): Promise<CartData> {
-  const row = await findCartByUserId(userId);
+export async function getCart(owner: CartOwner): Promise<CartData> {
+  const row = await findCartByOwner(owner);
   return mapCart(row);
 }
 
-export async function getCartItemCount(userId: string) {
-  return findCartItemCount(userId);
+export async function getCartItemCount(owner: CartOwner) {
+  return findCartItemCount(owner);
 }
 
 export async function addItemToCart(
-  userId: string,
+  owner: CartOwner,
   input: { variantId: string; quantity: number },
 ) {
-  return addOrIncrementCartItem(userId, input.variantId, input.quantity);
+  return addOrIncrementCartItem(owner, input.variantId, input.quantity);
 }
 
-export async function updateCartItemQuantity(userId: string, itemId: string, quantity: number) {
-  await setCartItemQuantity(userId, itemId, quantity);
+export async function updateCartItemQuantity(owner: CartOwner, itemId: string, quantity: number) {
+  await setCartItemQuantity(owner, itemId, quantity);
 }
 
-export async function removeCartItem(userId: string, itemId: string) {
-  await deleteCartItem(userId, itemId);
+export async function removeCartItem(owner: CartOwner, itemId: string) {
+  await deleteCartItem(owner, itemId);
 }

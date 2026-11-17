@@ -60,6 +60,15 @@ Edit `src/config/site.config.ts` before launching a real shop. Nothing brand-fac
 
 Money values are integer paise: `149900` is ₹1,499.00.
 
+### WhatsApp order requests
+
+Before enabling checkout for customers, set `contact.whatsapp` to the shop number with country
+code, set `contact.countryCallingCode` (for example `91`), and set shipping
+`standardFee`/`freeShippingThreshold` in paise. The canonical `siteConfig.url` is read from
+`NEXT_PUBLIC_SITE_URL`; configure that environment variable to the public HTTPS origin so product
+links and token-protected order links are absolute and usable. Replace the checked-in placeholder
+WhatsApp number before placing real orders.
+
 After changing seed-related values, run `pnpm db:seed` to refresh product brands, SEO titles and seeded accounts. The current idempotent catalog seed contains 13 categories and 30 products, including nested Winter Wear categories. `StoreSettings` is only created when absent and is not overwritten, so update it in the database (or reset a disposable database) if it already exists. `EMAIL_FROM` defaults to the configured brand and contact email when left empty.
 
 ## 3. Database
@@ -75,6 +84,23 @@ For a fresh production database:
 ```bash
 pnpm db:migrate:deploy
 ```
+
+For the WhatsApp checkout schema change, generate and apply a migration on development first, commit
+the generated migration directory, back up production, then deploy the committed migration:
+
+```powershell
+# Development, interactive terminal:
+pnpm exec prisma migrate dev --name whatsapp_checkout
+
+# Production release, after setting production DATABASE_URL:
+pnpm prisma migrate deploy
+pnpm db:generate
+pnpm build
+```
+
+Required production environment variables remain `DATABASE_URL`, `AUTH_SECRET` and
+`NEXT_PUBLIC_SITE_URL`. Do not point production at a development/shadow database and do not run
+`migrate dev` or `db reset` in production.
 
 The initial migration is committed at `prisma/migrations/20261113000000_init`. It was generated without a live database using:
 

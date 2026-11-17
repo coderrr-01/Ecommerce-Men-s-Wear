@@ -32,3 +32,6 @@ export interface CartData {
   grandTotal: number;
   freeShippingRemaining: number;
 }
+
+export type CartOwner =
+  { userId: string; sessionId?: never } | { sessionId: string; userId?: never };

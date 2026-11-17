@@ -1,5 +1,32 @@
 # Documentation changelog
 
+## 2026-11-17 — Phase 5 Part A order experience
+
+- Added customer-owned order listing/detail pages and status timelines on account and guest routes.
+- Added append-only order status history, private admin notes, customer-visible tracking details,
+  date/status-filtered order CSV and order-status WhatsApp messages.
+- Added authorized PDF invoices with race-safe annual invoice numbers, Indian amount-in-words,
+  PDFKit and bundled OFL Noto fonts.
+- Lint, typecheck, 18 unit-test files and production build pass. A local 35-item multi-page PDF
+  verified rupee text, Hindi/Gujarati font runs and amount-in-words; Next tracing includes its
+  bundled fonts. PostgreSQL is reachable, but the additive Phase 5 migration and browser/database
+  order workflows remain unverified until run interactively.
+
+## 2026-11-17 — WhatsApp checkout and orders
+
+- Added guest cart sessions, checkout with server-side repricing, transactional pending order
+  snapshots and cart clearing, idempotency, rate limiting, token-protected order lookup and
+  click-to-chat WhatsApp confirmation.
+- Added admin order search/detail/status workflow with conditional stock deduction and audited
+  restoration on cancellation.
+- Added focused unit tests and updated order, cart, API, database, architecture and deployment docs.
+- Schema changes are additive. The owner must run `pnpm exec prisma migrate dev --name
+whatsapp_checkout` in the interactive VS Code terminal; migration generation and order lifecycle
+  verification remain pending.
+- Guest add-to-cart, cart persistence and checkout rendering were checked in the local browser.
+  `pnpm lint`, `pnpm typecheck`, `pnpm test` (15 files, 62 tests) and `pnpm build` pass.
+  Configured WhatsApp order submission and the real DB stock lifecycle remain pending.
+
 ## 2026-11-16 — Storefront intro preloader
 
 - Added the home intro with a scoped stylesheet, site-config timings and theme-token colors. It
