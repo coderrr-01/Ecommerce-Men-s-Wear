@@ -10,6 +10,7 @@ import { siteConfig } from "@/config/site.config";
 import { formatPrice } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
+export const metadata = { robots: { index: false, follow: false } };
 
 export default async function CheckoutPage() {
   const user = await getCurrentUser();

@@ -7,6 +7,7 @@ import { GuestWishlistProvider } from "@/features/wishlist/components/guest-wish
 import { QuickViewProvider } from "@/features/catalog/components/quick-view-provider";
 import { Toaster } from "sonner";
 import { IntroPreloader } from "@/components/intro/IntroPreloader";
+import { siteConfig } from "@/config/site.config";
 import { getCurrentUser } from "@/features/auth/services/session.service";
 import { getWishlist } from "@/features/wishlist/services/wishlist.service";
 
@@ -15,7 +16,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
   const wishlist = user ? await getWishlist(user.id) : [];
   return (
     <div className={`${fontVariables} flex min-h-dvh flex-col`}>
-      <IntroPreloader />
+      {siteConfig.intro.enabled ? <IntroPreloader /> : null}
       <GuestWishlistProvider userId={user?.id} initialItems={wishlist}>
         <QuickViewProvider>
           <SiteHeader />

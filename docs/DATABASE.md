@@ -38,7 +38,7 @@
 | `StockMovement`          | Auditable inventory adjustment           | `variantId`, signed `delta`, reason, acting `userId`, indexed creation time                          |
 | `Cart`                   | One cart per user or guest session       | unique nullable `userId`, unique nullable `sessionId`                                                |
 | `CartItem`               | Variant and quantity                     | unique `(cartId, variantId)`                                                                         |
-| `Order`                  | Immutable order header and totals        | unique order number/token/idempotency key; customer phone/status indexes; address JSON               |
+| `Order`                  | Immutable order header and totals        | unique order number/token/idempotency key; user/phone/status placed-time indexes; address JSON       |
 | `OrderItem`              | Product snapshot at purchase time        | stores name, slug, SKU, size, colour, price, image                                                   |
 | `OrderStatusHistory`     | Append-only order lifecycle events       | order, previous/next status, optional actor and customer-visible note                                |
 | `OrderInternalNote`      | Staff-only order notes                   | order, author, note and creation time; excluded from customer reads                                  |
@@ -72,6 +72,7 @@ Committed migrations:
 - `prisma/migrations/20261117105952_phase5_order_experience/migration.sql`
 - `prisma/migrations/20261117122300_phase5_part_b/migration.sql`
 - `prisma/migrations/20261118070548_phase6_security_hardening/migration.sql`
+- `prisma/migrations/20261118104313_phase6_c2_launch_indexes/migration.sql`
 
 The admin migration adds `ProductSizeType`, product fields used by the catalog editor, and the
 `stock_movements` table. It was generated with Prisma and applied to the configured PostgreSQL
@@ -120,6 +121,19 @@ and applied locally. It adds review photos, returns/exchanges, coupon redemption
 subscriptions, contact messages and the additive order-status enum values. It does not drop or
 rename existing columns. Production deploys the reviewed migration with `pnpm prisma migrate deploy`;
 never hand-write migration SQL or use `db push`.
+
+Phase 6 Part C2 generated and applied `20261118104313_phase6_c2_launch_indexes` with
+`prisma migrate dev`. It only adds indexes for active/deleted product filtering, review aggregate
+filtering, and order owner/phone/status queries ordered by `placedAt`; it drops or renames nothing.
+Existing category active/deleted, variant `(productId, isActive, deletedAt)`, unique coupon code,
+coupon redemption `(couponId, customerKey, createdAt)`, and review `(productId, status)` indexes
+remain in place.
+
+Guest-order claiming needs no new columns or tables: it atomically attaches the existing guest
+order's nullable `userId` after validating the existing unique WhatsApp token and a matching Indian
+mobile. A successful claim writes the existing `AdminAuditLog` row in the same transaction. The
+unique token remains stored but is only accepted for token-based reads while `userId` is null, or
+for the owning signed-in customer.
 
 ## Seed
 

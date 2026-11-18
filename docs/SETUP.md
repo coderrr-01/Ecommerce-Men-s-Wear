@@ -60,6 +60,9 @@ Edit `src/config/site.config.ts` before launching a real shop. Nothing brand-fac
 | Demo seed accounts | `seed.adminName`, `seed.adminEmail`, `seed.customerName`, `seed.customerEmail`                                                              |
 | Theme              | `theme.*` colour tokens and `theme.radius`                                                                                                  |
 | Locale/currency    | `locale`, `currency`, `currencySymbol`, `defaultCountry`, `timezone`; canonical URL comes from `NEXT_PUBLIC_SITE_URL`                       |
+| Policy copy        | `policies.pages.*`; all current policy copy is draft and must be replaced before launch                                                     |
+| Invoice identity   | `invoice.prefix`, `legalName`, `address.*`, `tax.gstin`, `tax.pan`                                                                          |
+| Demo images/intro  | `NEXT_PUBLIC_DEMO_ASSETS_ENABLED`; production intro is off unless `NEXT_PUBLIC_INTRO_PRELOADER_ENABLED=true`                                |
 
 Money values are integer paise: `149900` is ₹1,499.00.
 
@@ -152,6 +155,78 @@ Production safety:
   secret store, and redeploy. Never paste secrets into logs, issues or source control.
 - Before production, run `pnpm prisma migrate deploy` against the production `DATABASE_URL`, then
   regenerate/build and deploy. Do not run `migrate dev` in production.
+
+## Production launch checklist
+
+- [ ] Point the production domain/DNS and TLS certificate at Vercel. Set
+      `NEXT_PUBLIC_SITE_URL` and `AUTH_URL` to the same canonical HTTPS origin.
+- [ ] Set production `DATABASE_URL` to Prisma Postgres and `AUTH_SECRET` to a new random value of
+      at least 32 characters. Keep credentials in Vercel environment settings, not source control.
+- [ ] Configure Cloudinary (`CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`,
+      `CLOUDINARY_API_SECRET`) and replace sample Unsplash imagery in `site.config.ts` and demo catalog
+      records with approved store imagery. Keep `NEXT_PUBLIC_DEMO_ASSETS_ENABLED=false`; only turn it
+      on for an intentional demo deployment.
+- [ ] Configure `contact.whatsapp` with the shop's digits-only country-code number,
+      `contact.countryCallingCode`, shipping fees/threshold, `shipping.returnsWindowDays`,
+      `policies.returnWindowDays`, `invoice.prefix`, legal name/address and tax `gstin`/`pan`.
+- [ ] Replace every policy draft in `siteConfig.policies.pages` and review shipping, returns,
+      privacy, terms and contact text with qualified counsel. **REPLACE BEFORE LAUNCH** is displayed
+      on the draft policy pages and remains a required manual task.
+- [ ] Back up PostgreSQL and deploy only reviewed committed migrations:
+
+  ```powershell
+  $env:DATABASE_URL = "<production Prisma Postgres URL>"
+  pnpm prisma migrate deploy
+  pnpm db:generate
+  pnpm build
+  ```
+
+- [ ] Create your production administrator using
+      `pnpm admin:create -- <email> <strong-password> <name> --disable-demo`. Confirm the configured
+      demo admin is disabled and revoke any demo sessions. Do not run `pnpm db:reset` in production.
+- [ ] Keep `ALLOW_DEMO_SEED=false`, remove seed credentials from deployment variables and remove
+      demo products/banners through the admin UI before launch. The production seed is explicitly
+      gated; do not enable it for a live store.
+- [ ] Configure a real email provider (`EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, `EMAIL_FROM`) if
+      password-reset email is required. Console email is development-only and does not send mail.
+- [ ] Leave `CSP_MODE=report-only` while testing the manual CSP checklist below; inspect reports
+      and only then set `CSP_MODE=enforce`. Production CSP omits `unsafe-eval`; demo image hosts are
+      omitted unless demo assets are explicitly enabled.
+- [ ] Verify `GET /api/health`, Vercel logs/alerts, admin audit records and database backups/restore
+      procedures. The health endpoint exposes only a generic database status and timestamp.
+- [ ] Measure Lighthouse mobile scores on the production-like home and product pages and target at
+      least 85. The production intro preloader is disabled by default to avoid delaying LCP; enable it
+      only after measuring again.
+- [ ] No analytics or cookie notice is included. Vercel Analytics can be considered after launch;
+      it was intentionally not added.
+
+### CSP browser checklist before enforce
+
+Test on staging with report-only enabled: home with intro (if enabled), product detail and its
+social image, cart, checkout, WhatsApp link, admin dashboard, Cloudinary image upload, invoice
+download, and PWA manifest/install. Also check reduced-motion behavior and mobile navigation.
+
+### Isolated Playwright E2E tests
+
+Playwright is a development-only dependency. The runner refuses to start without an explicit
+`E2E_DATABASE_URL` whose database name contains `e2e` or `test`, and requires a separately configured
+`DATABASE_URL` to check that the URLs do not resolve to the same database. Keep `DATABASE_URL` set
+to the normal development database while running E2E. Use a disposable database, never development
+or production:
+
+```powershell
+$env:E2E_DATABASE_URL = "postgresql://<user>:<password>@<host>:5432/meri_shop_e2e?schema=public"
+$env:DATABASE_URL = $env:E2E_DATABASE_URL
+pnpm prisma migrate deploy
+Remove-Item Env:DATABASE_URL
+pnpm exec playwright install chromium
+pnpm test:e2e
+```
+
+The E2E fixtures create and clean up uniquely prefixed products, users, coupons and orders in that
+database. Browser installation is deliberately manual and is not part of normal install or Vercel
+builds. E2E tests exercise coupon checkout, decoded WhatsApp content, guest-order claiming, admin
+confirmation/stock, invoice download, customer isolation and the customer-to-admin redirect.
 
 ## 4. Run
 

@@ -45,5 +45,10 @@ describe("security hardening utilities", () => {
     expect(policy).toContain("https://res.cloudinary.com");
     expect(policy).toContain("style-src-attr 'unsafe-inline'");
     expect(policy).toContain("frame-ancestors 'none'");
+    expect(policy).not.toContain("'unsafe-eval'");
+    expect(policy).not.toContain("images.unsplash.com");
+    expect(buildContentSecurityPolicy("nonce", { development: true, demoAssets: true })).toContain(
+      "images.unsplash.com",
+    );
   });
 });

@@ -45,6 +45,7 @@ export async function GET(request: Request, context: { params: Promise<{ orderNu
         "Content-Disposition": `attachment; filename="${invoice.invoiceNumber}.pdf"`,
         "Content-Length": String(pdf.byteLength),
         "Content-Type": "application/pdf",
+        "X-Robots-Tag": "noindex, nofollow, noarchive",
         "X-Content-Type-Options": "nosniff",
       },
     });
@@ -55,7 +56,10 @@ export async function GET(request: Request, context: { params: Promise<{ orderNu
       { success: false, error: apiError },
       {
         status: error instanceof AppError ? error.status : 500,
-        headers: { "Cache-Control": "no-store" },
+        headers: {
+          "Cache-Control": "no-store",
+          "X-Robots-Tag": "noindex, nofollow, noarchive",
+        },
       },
     );
   }

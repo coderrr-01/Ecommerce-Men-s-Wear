@@ -8,14 +8,25 @@ export function readCspMode(value = process.env.CSP_MODE): CspMode {
 
 export function buildContentSecurityPolicy(
   nonce: string,
-  { development = false, reportEndpoint = "/api/security/csp-report" } = {},
+  {
+    development = false,
+    demoAssets = false,
+    reportEndpoint = "/api/security/csp-report",
+  }: { development?: boolean; demoAssets?: boolean; reportEndpoint?: string } = {},
 ): string {
+  const imageHosts = [
+    "'self'",
+    "data:",
+    "blob:",
+    "https://res.cloudinary.com",
+    ...(demoAssets ? ["https://images.unsplash.com", "https://picsum.photos"] : []),
+  ].join(" ");
   return [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${development ? " 'unsafe-eval'" : ""}`,
     `style-src 'self' 'nonce-${nonce}'`,
     "style-src-attr 'unsafe-inline'",
-    "img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com https://picsum.photos",
+    `img-src ${imageHosts}`,
     "font-src 'self' data:",
     `connect-src 'self' https://api.cloudinary.com https://res.cloudinary.com${development ? " ws: wss:" : ""}`,
     "worker-src 'self' blob:",

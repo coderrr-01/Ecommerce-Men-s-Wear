@@ -10,9 +10,10 @@ import { Label } from "@/components/ui/label";
 import { registerAction } from "@/features/auth/actions/auth.actions";
 import { initialAuthState } from "@/features/auth/types";
 
-export function RegisterForm() {
+export function RegisterForm({ redirectTo }: { redirectTo?: string }) {
   const [state, formAction, isPending] = useActionState(registerAction, initialAuthState);
   const [showPasswords, setShowPasswords] = useState(false);
+  const loginHref = `/login${redirectTo ? `?redirectTo=${encodeURIComponent(redirectTo)}` : ""}`;
 
   return (
     <div className="rounded-lg border border-border bg-card p-6 shadow-sm sm:p-8">
@@ -25,12 +26,18 @@ export function RegisterForm() {
 
       <form action={formAction} className="space-y-5" noValidate>
         {state.successMessage ? (
-          <p
+          <div
             role="status"
             className="rounded-md border border-accent/30 bg-accent/5 px-3 py-2 text-sm text-accent"
           >
-            {state.successMessage}
-          </p>
+            <p>{state.successMessage}</p>
+            <Link
+              href={loginHref}
+              className="mt-2 inline-block font-medium underline underline-offset-4"
+            >
+              Sign in to continue
+            </Link>
+          </div>
         ) : null}
         <div className="space-y-2">
           <Label htmlFor="name">Full name</Label>
@@ -44,6 +51,25 @@ export function RegisterForm() {
           />
           {state.fieldErrors?.name ? (
             <p className="text-sm text-destructive">{state.fieldErrors.name}</p>
+          ) : null}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="phone">Mobile number (optional)</Label>
+          <Input
+            id="phone"
+            name="phone"
+            type="tel"
+            inputMode="numeric"
+            autoComplete="tel-national"
+            maxLength={10}
+            aria-invalid={Boolean(state.fieldErrors?.phone)}
+          />
+          <p className="text-xs text-muted-foreground">
+            Add the mobile used for a guest order to claim it later. This number is not verified.
+          </p>
+          {state.fieldErrors?.phone ? (
+            <p className="text-sm text-destructive">{state.fieldErrors.phone}</p>
           ) : null}
         </div>
 
@@ -124,7 +150,7 @@ export function RegisterForm() {
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Already have an account?{" "}
-        <Link href="/login" className="font-medium text-foreground underline underline-offset-4">
+        <Link href={loginHref} className="font-medium text-foreground underline underline-offset-4">
           Sign in
         </Link>
       </p>

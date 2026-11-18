@@ -8,12 +8,20 @@ export function customerOrderWhere(orderNumber: string, userId: string) {
   return { orderNumber, userId };
 }
 
+export function publicOrderAccessWhere(orderNumber: string, token: string, userId: string | null) {
+  return {
+    orderNumber,
+    whatsappToken: token,
+    OR: [{ userId: null }, ...(userId ? [{ userId }] : [])],
+  };
+}
+
 export function invoiceAccessWhere(orderNumber: string, access: InvoiceAccess) {
   if (access.isStaff) return { orderNumber };
 
   const allowedOwners = [
     ...(access.userId ? [{ userId: access.userId }] : []),
-    ...(access.token ? [{ whatsappToken: access.token }] : []),
+    ...(access.token ? [{ whatsappToken: access.token, userId: null }] : []),
   ];
   return allowedOwners.length
     ? { orderNumber, OR: allowedOwners }

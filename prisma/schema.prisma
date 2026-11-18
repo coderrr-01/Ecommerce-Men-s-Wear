@@ -192,6 +192,7 @@ model Product {
   orderItems   OrderItem[]
 
   @@index([categoryId, isActive, deletedAt])
+  @@index([isActive, deletedAt])
   @@index([isFeatured, isActive])
   @@index([basePrice])
   @@index([gender])
@@ -336,6 +337,9 @@ model Order {
   @@index([customerPhone, createdAt])
   @@index([status])
   @@index([placedAt])
+  @@index([userId, placedAt])
+  @@index([customerPhone, placedAt])
+  @@index([status, placedAt])
   @@map("orders")
 }
 
@@ -499,6 +503,7 @@ model Review {
 
   @@unique([productId, userId])
   @@index([productId, status])
+  @@index([productId, status, deletedAt])
   @@map("reviews")
 }
 

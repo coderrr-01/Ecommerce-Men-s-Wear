@@ -20,6 +20,11 @@ Before enforcement, manually test:
 7. Invoice PDF download.
 8. PWA manifest and install flow.
 
+Production `script-src` omits `unsafe-eval`. Unsplash/Picsum image hosts are enabled in development
+or when `NEXT_PUBLIC_DEMO_ASSETS_ENABLED=true`; production should leave the flag off after replacing
+sample imagery. The production intro is disabled unless `NEXT_PUBLIC_INTRO_PRELOADER_ENABLED=true`,
+so it cannot cover the home page's LCP by default.
+
 ## Rate limiting and authentication
 
 The shared limiter stores only HMAC-SHA-256 key hashes (keyed by `AUTH_SECRET`) and fixed-window counters in PostgreSQL. Expired

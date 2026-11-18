@@ -26,15 +26,35 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
   if (!product) return { title: "Product not found" };
 
+  const canonical = new URL(`/products/${encodeURIComponent(product.slug)}`, siteConfig.url);
+  const socialImage = new URL(
+    `/api/og/products/${encodeURIComponent(product.slug)}`,
+    siteConfig.url,
+  );
+  const description = product.shortDescription ?? product.description.slice(0, 155);
+  const lowestPrice = product.variants.length
+    ? Math.min(...product.variants.map((variant) => variant.price))
+    : 0;
   return {
     title: product.name,
-    description: product.shortDescription ?? product.description.slice(0, 155),
+    description,
+    alternates: { canonical },
     openGraph: {
       title: product.name,
-      description: product.shortDescription ?? product.description.slice(0, 155),
-      images: product.images[0]?.url
-        ? [{ url: product.images[0].url, alt: product.name }]
-        : undefined,
+      description,
+      url: canonical,
+      siteName: siteConfig.name,
+      images: [{ url: socialImage, width: 1200, height: 630, alt: product.name }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: product.name,
+      description,
+      images: [{ url: socialImage, alt: product.name }],
+    },
+    other: {
+      "product:price:amount": (lowestPrice / 100).toFixed(2),
+      "product:price:currency": siteConfig.currency,
     },
   };
 }
@@ -80,13 +100,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
     description: product.description,
     brand: { "@type": "Brand", name: product.brand ?? siteConfig.name },
     category: product.categoryName,
-    image: product.images.map((image) => image.url),
+    image: product.images.map((image) => new URL(image.url, siteConfig.url).toString()),
     offers: {
       "@type": "AggregateOffer",
       priceCurrency: siteConfig.currency,
       lowPrice: (lowestPrice / 100).toFixed(2),
       offerCount: product.variants.length,
       availability: inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      url: new URL(`/products/${encodeURIComponent(product.slug)}`, siteConfig.url).toString(),
     },
     ...(product.rating.count > 0
       ? {
@@ -98,6 +119,39 @@ export default async function ProductPage({ params }: ProductPageProps) {
         }
       : {}),
   };
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: new URL("/", siteConfig.url).toString(),
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Shop",
+        item: new URL("/shop", siteConfig.url).toString(),
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: product.categoryName,
+        item: new URL(
+          `/shop?category=${encodeURIComponent(product.categorySlug)}`,
+          siteConfig.url,
+        ).toString(),
+      },
+      {
+        "@type": "ListItem",
+        position: 4,
+        name: product.name,
+        item: new URL(`/products/${encodeURIComponent(product.slug)}`, siteConfig.url).toString(),
+      },
+    ],
+  };
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
@@ -106,6 +160,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
+      <script
+        nonce={nonce}
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbSchema).replace(/</g, "\\u003c"),
         }}
       />
 

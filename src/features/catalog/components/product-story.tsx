@@ -143,8 +143,9 @@ export function ProductStory({ product, related, reviewState }: ProductStoryProp
         ) : null}
         {reviewState === "NOT_ELIGIBLE" ? (
           <p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Only customers who received this product can review it. Reviews can only be linked to
-            orders placed while signed in; guest orders cannot currently be claimed.
+            Only customers who received this product can review it. If you ordered as a guest, claim
+            the order from its private order link while signed in to an account with the same mobile
+            number.
           </p>
         ) : null}
         {reviewState === "PENDING" ? (

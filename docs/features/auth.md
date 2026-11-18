@@ -5,6 +5,9 @@
 - Credentials only: email + password. Passwords are bcrypt hashes (cost 12).
 - Auth.js runs with the JWT session strategy; the role is copied into the token and session.
 - Registration always creates `CUSTOMER`; staff/admin roles are assigned directly in the database or a future admin screen.
+- Registration optionally stores a 10-digit Indian mobile number. It is not verified; it is used only
+  as an additional match when claiming a token-protected guest order. `redirectTo` is preserved
+  through registration and sign-in for that claim flow.
 - Unknown emails run a dummy bcrypt comparison to reduce timing differences.
 - Inactive or soft-deleted users are rejected by the credentials provider and by the DB-backed session guard.
 - Brand-facing auth copy reads the shop name from `src/config/site.config.ts`.

@@ -27,6 +27,7 @@ import { priceOrderCart } from "@/features/orders/pricing.utils";
 import { generateOrderNumber } from "@/lib/utils";
 import { isInvoiceAvailable } from "@/features/orders/order-access.utils";
 import { couponCustomerKey } from "@/features/coupons/coupon.utils";
+import { canClaimGuestOrder } from "@/features/orders/claim.utils";
 
 const ORDER_NUMBER_ATTEMPTS = 4;
 
@@ -165,6 +166,7 @@ export async function createCustomerOrder(
 export async function getOrderConfirmation(
   orderNumber: string,
   token: string,
+  user: { id: string; phone: string | null } | null,
 ): Promise<{
   order: OrderMessageData;
   status: string;
@@ -176,12 +178,14 @@ export async function getOrderConfirmation(
   courierName: string | null;
   trackingUrl: string | null;
   invoiceAvailable: boolean;
+  canClaim: boolean;
+  isClaimedByCurrentUser: boolean;
   message: string;
   whatsappUrl: string;
 } | null> {
   if (!/^[A-Za-z0-9_-]{43}$/.test(token)) return null;
   if (!/^[A-Za-z0-9-]{1,60}$/.test(orderNumber)) return null;
-  const stored = await findPublicOrder(orderNumber, token);
+  const stored = await findPublicOrder(orderNumber, token, user?.id ?? null);
   if (!stored) return null;
   const order = toOrderMessageData(stored);
   const message = buildWhatsAppOrderMessage(order);
@@ -196,6 +200,10 @@ export async function getOrderConfirmation(
     courierName: stored.courierName,
     trackingUrl: stored.trackingUrl,
     invoiceAvailable: isInvoiceAvailable(stored.status, stored.stockCommittedAt),
+    canClaim:
+      stored.userId === null &&
+      Boolean(user && canClaimGuestOrder(stored.customerPhone, user.phone)),
+    isClaimedByCurrentUser: Boolean(user && stored.userId === user.id),
     message,
     whatsappUrl: buildWhatsAppUrl(message, siteConfig.contact.whatsapp),
   };

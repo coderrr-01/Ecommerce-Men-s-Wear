@@ -14,6 +14,7 @@ export const metadata: Metadata = {
     template: siteConfig.seo.titleTemplate,
   },
   description: siteConfig.description,
+  alternates: { canonical: siteConfig.url },
   keywords: [...siteConfig.seo.keywords],
   applicationName: siteConfig.name,
   authors: [{ name: siteConfig.legalName }],
@@ -43,10 +44,35 @@ export const viewport: Viewport = {
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: siteConfig.legalName,
+    url: siteConfig.url,
+    email: siteConfig.contact.email,
+    telephone: siteConfig.contact.phone,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: [siteConfig.address.line1, siteConfig.address.line2]
+        .filter(Boolean)
+        .join(", "),
+      addressLocality: siteConfig.address.city,
+      addressRegion: siteConfig.address.state,
+      postalCode: siteConfig.address.postalCode,
+      addressCountry: siteConfig.address.country,
+    },
+  };
   return (
     <html lang={siteConfig.locale} data-scroll-behavior="smooth">
       <head>
         <style nonce={nonce} dangerouslySetInnerHTML={{ __html: themeCss }} />
+        <script
+          nonce={nonce}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(organizationSchema).replace(/</g, "\\u003c"),
+          }}
+        />
       </head>
       <body>
         <MotionProvider nonce={nonce}>{children}</MotionProvider>

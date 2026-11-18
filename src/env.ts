@@ -18,6 +18,8 @@ const schema = z.object({
     .min(32, "AUTH_SECRET must be at least 32 characters. Run: openssl rand -base64 32"),
   AUTH_URL: z.url().optional(),
   NEXT_PUBLIC_SITE_URL: z.url().default("http://localhost:3000"),
+  NEXT_PUBLIC_DEMO_ASSETS_ENABLED: z.enum(["true", "false"]).optional(),
+  NEXT_PUBLIC_INTRO_PRELOADER_ENABLED: z.enum(["true", "false"]).optional(),
   CSP_MODE: z.enum(["report-only", "enforce", "off"]).default("report-only"),
 
   PAYMENT_PROVIDER: z.enum(["mock", "razorpay"]).default("mock"),

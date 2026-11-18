@@ -54,6 +54,15 @@ export const registerSchema = z
   .object({
     name: z.string().trim().min(2, "Enter your full name.").max(80, "Name is too long."),
     email: emailSchema,
+    phone: z
+      .string()
+      .trim()
+      .refine(
+        (value) => value === "" || /^[6-9]\d{9}$/.test(value),
+        "Enter a valid 10-digit Indian mobile number.",
+      )
+      .transform((value) => value || undefined)
+      .optional(),
     password: passwordSchema,
     confirmPassword: z
       .string()

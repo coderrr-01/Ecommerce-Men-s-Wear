@@ -13,6 +13,7 @@ import {
   normalizeCouponCode,
 } from "@/features/coupons/coupon.utils";
 import { logger } from "@/lib/logger";
+import { publicOrderAccessWhere } from "@/features/orders/order-access.utils";
 
 const checkoutCartSelect = {
   id: true,
@@ -196,12 +197,17 @@ export async function findOrderByIdempotencyKey(idempotencyKey: string) {
   });
 }
 
-export async function findPublicOrder(orderNumber: string, whatsappToken: string) {
+export async function findPublicOrder(
+  orderNumber: string,
+  whatsappToken: string,
+  userId: string | null,
+) {
   return prisma.order.findFirst({
-    where: { orderNumber, whatsappToken },
+    where: publicOrderAccessWhere(orderNumber, whatsappToken, userId),
     select: {
       orderNumber: true,
       whatsappToken: true,
+      userId: true,
       customerName: true,
       customerPhone: true,
       shippingAddress: true,
@@ -234,6 +240,45 @@ export async function findPublicOrder(orderNumber: string, whatsappToken: string
         },
       },
     },
+  });
+}
+
+export async function findGuestOrderForClaim(orderNumber: string, whatsappToken: string) {
+  return prisma.order.findFirst({
+    where: { orderNumber, whatsappToken, userId: null },
+    select: { id: true, customerPhone: true },
+  });
+}
+
+export async function findOrderClaimedByUser(
+  orderNumber: string,
+  whatsappToken: string,
+  userId: string,
+) {
+  return prisma.order.findFirst({
+    where: { orderNumber, whatsappToken, userId },
+    select: { id: true },
+  });
+}
+
+export async function claimGuestOrderById(orderId: string, whatsappToken: string, userId: string) {
+  return prisma.$transaction(async (tx) => {
+    const result = await tx.order.updateMany({
+      where: { id: orderId, whatsappToken, userId: null },
+      data: { userId },
+    });
+    if (result.count === 1) {
+      await tx.adminAuditLog.create({
+        data: {
+          actorId: userId,
+          action: "customer.order.claim",
+          entityType: "order",
+          entityId: orderId,
+          details: { outcome: "claimed" },
+        },
+      });
+    }
+    return result;
   });
 }
 

@@ -48,6 +48,18 @@ Degraded response, HTTP 503:
 
 `Cache-Control: no-store` is always set.
 
+### SEO and launch routes
+
+- `GET /robots.txt` allows public crawling and disallows `/admin`, `/account`, `/checkout`,
+  `/order` and invoice API paths.
+- `GET /sitemap.xml` is generated from active, non-deleted products and categories, plus public
+  storefront, contact and policy pages. Product entries require an active variant and active
+  category.
+- `GET /api/og/products/{slug}` renders a 1200×630 product social image containing the product
+  image, name and current paise-backed price. Product metadata points Open Graph and Twitter cards
+  at this absolute URL.
+- `GET /api/health` remains a generic DB check; it returns no deployment version or secrets.
+
 ### `/api/auth/[...nextauth]`
 
 Auth.js handler (`GET`/`POST`): sign-in, callback, session, CSRF, sign-out and provider endpoints. Configuration lives in `src/auth.ts`.
@@ -91,11 +103,11 @@ dependency is required. Uploads use the configured `StorageProvider` (Cloudinary
 
 ### Authentication — `src/features/auth/actions/auth.actions.ts`
 
-| Action           | Input                                       | Behaviour                                                                                      |
-| ---------------- | ------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `loginAction`    | email, password, optional safe `redirectTo` | Validates, calls `signIn("credentials")`, redirects to a safe path or returns an error state   |
-| `registerAction` | name, email, password, confirm password     | Creates a customer and hashes the password; duplicate-safe response avoids account enumeration |
-| `logoutAction`   | none                                        | Signs out and redirects home                                                                   |
+| Action           | Input                                                            | Behaviour                                                                                                                                                   |
+| ---------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `loginAction`    | email, password, optional safe `redirectTo`                      | Validates, calls `signIn("credentials")`, redirects to a safe path or returns an error state                                                                |
+| `registerAction` | name, email, optional 10-digit phone, password, confirm password | Creates a customer and hashes the password; duplicate-safe response avoids account enumeration. Optional phone supports token-and-phone guest-order claims. |
+| `logoutAction`   | none                                                             | Signs out and redirects home                                                                                                                                |
 
 Redirect targets are checked by `isSafeRedirectPath` to prevent open redirects. Authentication errors are intentionally generic.
 
@@ -170,6 +182,14 @@ Guest pages include status history and configured tracking details, but never in
 Signed-in customers use `/account/orders` and `/account/orders/{orderNumber}`; repository queries
 always scope reads to the authenticated `userId`.
 
+`claimGuestOrderAction({ orderNumber, token })` is available only to a signed-in customer. The
+token is the secret; the account mobile must also match the order mobile after Indian-number
+normalization. A conditional `userId: null` update makes claiming single-owner under concurrent
+requests, and the successful claim plus audit record are atomic. Attempts are rate-limited. Once
+claimed, the token URL works only for that owner; token-only invoice access is restricted to orders
+that still have `userId: null`. Claiming makes the order visible in account history and enables
+delivered-order review eligibility.
+
 `updateOrderStatusAction({ orderId, status })` is ADMIN/STAFF-only and returns
 `ApiResponse<{ status }>`; allowed transitions are validated in the service. Confirming
 conditionally deducts stock and writes `StockMovement` rows in the same transaction. Cancelling a
@@ -177,20 +197,21 @@ confirmed/unshipped order restores stock transactionally. `/admin/orders` suppor
 phone search, status filtering and pagination; `/admin/orders/{id}` displays the order and chat
 action.
 
-Order creation is limited to five per hour per phone and per available client IP using a
-process-local in-memory limiter. Multi-instance production deployments should move this limiter to
-a shared database/cache store.
+Order creation and guest-order claims use the shared PostgreSQL-backed rate limiter, with phone/IP
+or account/IP identities hashed before storage. Public flows fail open on limiter storage errors;
+login and password reset fail closed.
 
 #### Order experience routes and actions
 
-| Method/path                                              | Access                                       | Contract                                                                                                                                   |
-| -------------------------------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `GET /account/orders`                                    | Signed-in customer                           | Paginated order list for the current user only.                                                                                            |
-| `GET /account/orders/{orderNumber}`                      | Owning customer                              | Snapshot items, totals, address, status history and tracking; non-owned orders are 404.                                                    |
-| `GET /api/orders/{orderNumber}/invoice`                  | ADMIN/STAFF, owning customer, or token guest | Downloads a PDF after confirmation; guests provide `?token=...`. Non-owned/missing/pending invoices return 404.                            |
-| `GET /api/admin/orders/export?status=&dateFrom=&dateTo=` | STAFF/ADMIN                                  | CSV for the selected status and inclusive date range.                                                                                      |
-| `saveAdminOrderDetailsAction`                            | STAFF/ADMIN                                  | Saves tracking fields and an internal note; only tracking fields are customer-visible.                                                     |
-| `updateOrderStatusAction`                                | STAFF/ADMIN                                  | Validates transition, records a customer-visible sanitized status note/history atomically; compare-and-set prevents duplicate transitions. |
+| Method/path                                              | Access                                                 | Contract                                                                                                                                                      |
+| -------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /account/orders`                                    | Signed-in customer                                     | Paginated order list for the current user only.                                                                                                               |
+| `GET /account/orders/{orderNumber}`                      | Owning customer                                        | Snapshot items, totals, address, status history and tracking; non-owned orders are 404.                                                                       |
+| `GET /api/orders/{orderNumber}/invoice`                  | ADMIN/STAFF, owning customer, or unclaimed token guest | Downloads a PDF after confirmation; token access ends when claimed. Non-owned/missing/pending invoices return 404; all responses are `X-Robots-Tag: noindex`. |
+| `GET /api/admin/orders/export?status=&dateFrom=&dateTo=` | STAFF/ADMIN                                            | CSV for the selected status and inclusive date range.                                                                                                         |
+| `saveAdminOrderDetailsAction`                            | STAFF/ADMIN                                            | Saves tracking fields and an internal note; only tracking fields are customer-visible.                                                                        |
+| `updateOrderStatusAction`                                | STAFF/ADMIN                                            | Validates transition, records a customer-visible sanitized status note/history atomically; compare-and-set prevents duplicate transitions.                    |
+| `claimGuestOrderAction({ orderNumber, token })`          | Signed-in customer                                     | Rate-limited; claims only an unowned order with a valid token and matching account mobile. Ownership and audit record are atomic.                             |
 
 Invoice numbers use the configured annual prefix and a database counter updated in the invoice
 transaction. The response is a private, no-store PDF generated with PDFKit on the Node.js runtime.

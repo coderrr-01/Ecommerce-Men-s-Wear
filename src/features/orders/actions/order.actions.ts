@@ -17,6 +17,15 @@ import { logger } from "@/lib/logger";
 import type { ApiResponse } from "@/types/api";
 import { getClientIp } from "@/lib/rate-limiter";
 import { recordAdminAudit } from "@/features/security/services/admin-audit.service";
+import { z } from "zod";
+import { orderNumberSchema } from "@/features/orders/schemas/order.schema";
+import { claimGuestOrder } from "@/features/orders/services/guest-order-claim.service";
+import { UnauthorizedError } from "@/lib/errors";
+
+const guestOrderClaimSchema = z.object({
+  orderNumber: orderNumberSchema,
+  token: z.string().regex(/^[A-Za-z0-9_-]{43}$/),
+});
 
 async function safeOrderAction<T>(
   action: string,
@@ -48,6 +57,26 @@ export async function placeOrderAction(
     revalidatePath("/cart");
     revalidatePath("/admin/orders");
     revalidatePath("/admin");
+    return result;
+  });
+}
+
+export async function claimGuestOrderAction(
+  input: unknown,
+): Promise<ApiResponse<{ claimed: boolean; alreadyClaimed: boolean }>> {
+  return safeOrderAction("orders.claim-guest", async () => {
+    const data = guestOrderClaimSchema.parse(input);
+    const user = await getCurrentUser();
+    if (!user) throw new UnauthorizedError();
+    const requestHeaders = await headers();
+    const result = await claimGuestOrder(
+      data.orderNumber,
+      data.token,
+      { id: user.id, phone: user.phone },
+      getClientIp(requestHeaders),
+    );
+    revalidatePath("/account/orders");
+    revalidatePath("/order/[orderNumber]", "page");
     return result;
   });
 }

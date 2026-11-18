@@ -9,6 +9,10 @@ function responseWithCsp(request: Request, response: NextResponse) {
   const nonce = btoa(crypto.randomUUID());
   const policy = buildContentSecurityPolicy(nonce, {
     development: process.env.NODE_ENV === "development",
+    demoAssets:
+      process.env.NODE_ENV !== "production" ||
+      process.env.NEXT_PUBLIC_DEMO_ASSETS_ENABLED === "true" ||
+      process.env.NEXT_PUBLIC_INTRO_PRELOADER_ENABLED === "true",
   });
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nonce", nonce);

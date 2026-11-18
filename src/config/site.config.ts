@@ -5,6 +5,14 @@
  */
 const brandName = "Diamond Selection";
 const brandShortName = "Diamond Selection";
+const demoAssetsEnabled =
+  process.env.NODE_ENV !== "production" ||
+  process.env.NEXT_PUBLIC_DEMO_ASSETS_ENABLED === "true" ||
+  process.env.NEXT_PUBLIC_INTRO_PRELOADER_ENABLED === "true";
+const introPreloaderEnabled =
+  process.env.NEXT_PUBLIC_INTRO_PRELOADER_ENABLED === "true" ||
+  (process.env.NODE_ENV !== "production" &&
+    process.env.NEXT_PUBLIC_INTRO_PRELOADER_ENABLED !== "false");
 
 export const siteConfig = {
   name: brandName,
@@ -28,7 +36,7 @@ export const siteConfig = {
   },
 
   intro: {
-    enabled: true,
+    enabled: introPreloaderEnabled,
     brandWord: "DIAMOND SELECTION",
     counterEnabled: true,
     rotationRangeDeg: 10,
@@ -293,6 +301,7 @@ export const siteConfig = {
       { label: "Returns & exchanges", href: "/policies/returns" },
       { label: "Privacy", href: "/policies/privacy" },
       { label: "Terms", href: "/policies/terms" },
+      { label: "Contact", href: "/contact" },
     ],
   },
 
@@ -320,6 +329,122 @@ export const siteConfig = {
     exchangeWindowDays: 14,
     returnWindowDays: 14,
     refundProcessingDays: "5–7 business days",
+    // REPLACE BEFORE LAUNCH: Review every policy with qualified counsel and replace this draft.
+    pages: {
+      shipping: {
+        title: "Shipping",
+        description: "Delivery timelines, charges and order tracking.",
+        sections: [
+          {
+            heading: "Dispatch and delivery",
+            body: [
+              "Orders are dispatched within 1–2 business days. Standard delivery takes {{estimatedDays}}.",
+              "Tracking details are shared after dispatch using the contact details provided with the order.",
+            ],
+          },
+          {
+            heading: "Charges",
+            body: [
+              "Shipping is complimentary on orders over {{freeShippingThreshold}}. Below that, standard shipping is {{standardFee}}.",
+              "Cash on delivery, where available, carries a fee of {{codFee}}.",
+            ],
+          },
+          {
+            heading: "Serviceable areas",
+            body: [
+              "We currently deliver across India. Contact our care team to confirm serviceability for your postal code.",
+            ],
+          },
+        ],
+      },
+      returns: {
+        title: "Returns & exchanges",
+        description: "How to return or exchange an unworn piece.",
+        sections: [
+          {
+            heading: "Window",
+            body: [
+              "Returns and exchanges may be requested within {{returnWindowDays}} days of delivery, subject to eligibility and inspection.",
+              "Pieces must be unworn, unwashed and returned with original tags and packaging.",
+            ],
+          },
+          {
+            heading: "How to start a return",
+            body: [
+              "Request a return from your account or contact {{email}} with your order number and reason.",
+              "Any applicable refund is processed after the returned item is received and inspected.",
+            ],
+          },
+          {
+            heading: "Exclusions",
+            body: [
+              "Altered garments, innerwear and items marked final sale may be excluded, except where required by law.",
+              "Contact us promptly if a piece arrives damaged or incorrect.",
+            ],
+          },
+        ],
+      },
+      privacy: {
+        title: "Privacy",
+        description: "What information is collected and how it is used.",
+        sections: [
+          {
+            heading: "Information we collect",
+            body: [
+              "We collect information provided when creating an account, placing an order or contacting support, including contact details, delivery addresses and order history.",
+            ],
+          },
+          {
+            heading: "How we use it",
+            body: [
+              "Information is used to fulfil order requests, provide support, prevent fraud and meet legal obligations.",
+              "We do not sell personal information.",
+            ],
+          },
+          {
+            heading: "Your choices",
+            body: ["For access, correction or deletion requests, contact {{email}}."],
+          },
+        ],
+      },
+      terms: {
+        title: "Terms",
+        description: "Terms that apply when using this store.",
+        sections: [
+          {
+            heading: "Orders",
+            body: [
+              "Submitting a WhatsApp order request does not guarantee availability. The shop will confirm the order and delivery details directly.",
+            ],
+          },
+          {
+            heading: "Pricing",
+            body: [
+              "Prices are listed in {{currency}} and tax treatment is shown where applicable.",
+            ],
+          },
+          {
+            heading: "Contact",
+            body: [
+              "{{legalName}}, {{addressLine1}}, {{addressLine2}}, {{city}}, {{state}} {{postalCode}}, {{country}}. Email {{email}}.",
+            ],
+          },
+        ],
+      },
+      contact: {
+        title: "Contact",
+        description: "Our care team is here to help with products, delivery and order requests.",
+        sections: [
+          {
+            heading: "Care team",
+            body: [
+              "Email {{email}}, call {{phone}} or message us on WhatsApp during {{hours}}.",
+              "Use the form below for a written request. Submissions are stored for our team; email is sent only when an email provider is configured.",
+            ],
+          },
+        ],
+      },
+    },
   },
 
   seo: {
@@ -351,3 +476,4 @@ export const siteConfig = {
 } as const;
 
 export type SiteConfig = typeof siteConfig;
+export const isDemoAssetsEnabled = demoAssetsEnabled;

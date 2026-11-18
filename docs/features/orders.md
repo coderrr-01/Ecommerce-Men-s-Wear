@@ -11,6 +11,14 @@ Guests use `/order/{orderNumber}?token={token}`. The high-entropy token is requi
 human-readable order number. Both customer views render the same lifecycle timeline. Internal
 admin notes are stored separately and never selected by customer or guest queries.
 
+Signed-in customers can claim an earlier guest order from its token-protected page. The token is the
+authorization secret and the account phone must also match the order phone after Indian-number
+normalization. A conditional update only claims rows with `userId: null`, so concurrent accounts
+cannot both claim an order. Claim and audit record commit together. Once claimed, the old token link
+is accepted only for the owning account; an order can then appear in account history and qualify for
+delivered-purchase reviews. A new customer can preserve the private order link through registration
+and sign-in; registration accepts an optional unverified 10-digit mobile number for the match.
+
 Every new order records its initial `PENDING` history entry. Each valid admin status transition
 records `(fromStatus, toStatus, changedBy, note, createdAt)` in the same transaction as the status
 change and stock effects. The compare-and-set transition rejects concurrent/double submissions.
@@ -55,8 +63,8 @@ approval and receipt behavior. Stock returns only when an admin records item rec
 
 Invoices are available after confirmation (including later fulfilment states). A cancelled order
 remains eligible only when it had already committed stock. Downloads are authorized by ADMIN/STAFF,
-the owning signed-in customer, or the guest order token. Unauthorized and missing order numbers both
-return 404.
+the owning signed-in customer, or a token for an order that is still unclaimed. Unauthorized and
+missing order numbers both return 404; PDF and error responses include `X-Robots-Tag: noindex`.
 
 An invoice number is assigned on the first authorized download. The year-specific counter and
 unique `Order.invoiceNumber` are updated together in a serializable database transaction. A retry

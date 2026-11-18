@@ -1,5 +1,20 @@
 # Documentation changelog
 
+## 2026-11-18 — Phase 6 Part C2 SEO and launch readiness
+
+- Added DB-backed sitemap/robots, canonical and social metadata, a 1200×630 product social image,
+  Organization/Product/Breadcrumb JSON-LD, and noindex protections for private order/invoice areas.
+- Moved draft shipping/returns/privacy/terms/contact copy into `site.config.ts`; pages are visibly
+  marked **REPLACE BEFORE LAUNCH**.
+- Added rate-limited, phone-matched guest-order claiming with atomic ownership assignment and audit
+  logging; token access is revoked for everyone except the owner after claim.
+- Added configurable production demo-image CSP/Next Image allowlists and disabled the intro
+  preloader by default in production to protect LCP.
+- Added the Playwright development-only E2E suite with a separate test-database guard and
+  production launch checklist. No analytics or cookie notice was added.
+- Generated and applied the additive `20261118104313_phase6_c2_launch_indexes` migration using
+  `prisma migrate dev`. No schema change was needed for guest claiming.
+
 ## 2026-11-18 — Coupon validation and review eligibility fixes
 
 - Coupon application now returns rule-specific safe reasons, logs reason codes without customer

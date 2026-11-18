@@ -4,6 +4,7 @@ import { requireRole } from "@/features/auth/services/session.service";
 import { Toaster } from "sonner";
 
 export const dynamic = "force-dynamic";
+export const metadata = { robots: { index: false, follow: false } };
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await requireRole(ADMIN_ROLES);

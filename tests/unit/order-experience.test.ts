@@ -4,6 +4,7 @@ import {
   customerOrderWhere,
   invoiceAccessWhere,
   isInvoiceAvailable,
+  publicOrderAccessWhere,
 } from "@/features/orders/order-access.utils";
 import { amountInWords, formatInvoiceNumber, invoiceYear } from "@/features/orders/invoice.utils";
 import { allocateInvoiceNumber } from "@/features/orders/invoice-number.utils";
@@ -68,6 +69,18 @@ describe("order visibility and invoice eligibility", () => {
     expect(customerOrderWhere("DS-20261117-ABC", "customer-b").userId).not.toBe("customer-a");
   });
 
+  it("allows a guest token only while unclaimed or to its claiming owner", () => {
+    expect(publicOrderAccessWhere("DS-1", "secret", null)).toEqual({
+      orderNumber: "DS-1",
+      whatsappToken: "secret",
+      OR: [{ userId: null }],
+    });
+    expect(publicOrderAccessWhere("DS-1", "secret", "owner").OR).toEqual([
+      { userId: null },
+      { userId: "owner" },
+    ]);
+  });
+
   it("allows only an owner, a bearer token, or staff to query invoice records", () => {
     expect(invoiceAccessWhere("DS-1", { userId: "owner", token: null, isStaff: false })).toEqual({
       orderNumber: "DS-1",
@@ -77,7 +90,17 @@ describe("order visibility and invoice eligibility", () => {
       invoiceAccessWhere("DS-1", { userId: null, token: "secret-token", isStaff: false }),
     ).toEqual({
       orderNumber: "DS-1",
-      OR: [{ whatsappToken: "secret-token" }],
+      OR: [{ whatsappToken: "secret-token", userId: null }],
+    });
+    expect(
+      invoiceAccessWhere("DS-1", {
+        userId: "owner",
+        token: "old-guest-token",
+        isStaff: false,
+      }),
+    ).toEqual({
+      orderNumber: "DS-1",
+      OR: [{ userId: "owner" }, { whatsappToken: "old-guest-token", userId: null }],
     });
     expect(invoiceAccessWhere("DS-1", { userId: null, token: null, isStaff: false })).toEqual({
       orderNumber: "DS-1",

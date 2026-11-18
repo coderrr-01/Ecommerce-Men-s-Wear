@@ -1,8 +1,8 @@
 # Product reviews
 
 Only a signed-in customer with a DELIVERED order, a non-null delivery timestamp and a matching
-order item may submit one review per product. The order must have been placed while signed in;
-guest orders are not currently claimable, and the product page explains this limitation. The
+order item may submit one review per product. Guest orders become eligible after the owner claims
+them from the token-protected order page using an account phone that matches the order phone. The
 existing unique `(productId, userId)` constraint and service eligibility check prevent duplicates.
 Ratings are 1-5 stars; title and review text are sanitized plain text. Up to three JPEG, PNG or
 WebP photos (5 MB each) use the configured `StorageProvider`.

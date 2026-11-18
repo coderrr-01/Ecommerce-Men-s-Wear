@@ -5,8 +5,8 @@ Last updated: 2026-11-18
 ## Status
 
 Phase 2 Admin Catalog Management, the Diamond Selection storefront refresh, WhatsApp checkout,
-Phase 5 Part A, and Phase 5 Part B are implemented in code. The Part A and Part B migrations have
-been generated with Prisma and applied to the configured local PostgreSQL database.
+Phase 5 Parts A/B, and Phase 6 Parts C1/C2 are implemented in code. All seven migrations have been
+generated with Prisma and applied to the configured local PostgreSQL database.
 
 ## Phase 6 Part C1 security hardening (2026-11-18)
 
@@ -34,6 +34,31 @@ been generated with Prisma and applied to the configured local PostgreSQL databa
 - **Not yet verified:** Vercel serverless behavior, real provider email delivery, exhaustive Zod
   schema review, and interactive browser behavior. Role-change auditing is not applicable yet
   because no user-role management action exists.
+
+## Phase 6 Part C2 SEO and launch readiness (2026-11-18)
+
+- Added database-backed sitemap and robots routes, canonical/Open Graph/Twitter metadata,
+  Product/Organization/Breadcrumb JSON-LD, and 1200x630 product social images. Private routes and
+  invoice responses are marked noindex.
+- Added config-driven shipping, returns, privacy, terms and contact policy drafts. All drafts are
+  visibly labeled **REPLACE BEFORE LAUNCH**; no analytics or cookie notice was added.
+- Added guest-order claiming with the existing private order token plus matching account phone.
+  Claiming is single-owner/atomic, rate-limited and audited; a claimed order appears in account
+  history and can qualify for reviews.
+- Added production controls for demo image hosts and the intro preloader. Production CSP omits
+  `unsafe-eval`; sample image hosts are opt-in. The preloader is disabled by default in production.
+- Added additive product/order/review indexes via Prisma migration
+  `20261118104313_phase6_c2_launch_indexes`. Local PostgreSQL reports seven migrations applied and
+  the schema up to date.
+- Added Playwright E2E scaffolding guarded by a separately named `E2E_DATABASE_URL`; tests cover
+  checkout, coupon, WhatsApp message decoding, claim, admin stock confirmation, invoice access and
+  ownership boundaries. They were not run because no dedicated E2E database/browser installation
+  was provided.
+- Current `pnpm lint`, `pnpm typecheck`, `pnpm test` (22 files, 89 tests), and `pnpm build` pass.
+  Prisma validation and migration status pass.
+- **Not verified:** interactive browser flows, Lighthouse mobile score, WhatsApp's actual link
+  preview, Vercel/serverless behavior, and E2E against a dedicated test database. Local HTTP smoke
+  checks do not substitute for these staging checks.
 
 ## Phase 5 Part B (2026-11-17)
 
@@ -66,7 +91,8 @@ been generated with Prisma and applied to the configured local PostgreSQL databa
   converted to UTC instants.
 - Product detail shows login, eligibility, pending, published and rejected review states.
   Eligibility is scoped to the signed-in user's delivered order and matching item; guest orders
-  cannot currently be claimed and that restriction is explained in the UI.
+  placed before Phase 6 C2 could not be claimed at that time; the C2 guest-claim flow is documented
+  above.
 - Real PostgreSQL coupon test: saved a valid UTC 10% coupon (starts yesterday, expires next year,
   zero minimum, no limits) and applied lowercased, space-padded input to a populated signed-in
   cart. Subtotal 219700 paise, discount 21970, total 197730 paise. The temporary row was removed.

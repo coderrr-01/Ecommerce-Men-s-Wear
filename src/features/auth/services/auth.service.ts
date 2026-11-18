@@ -83,6 +83,7 @@ export async function registerCustomer(input: RegisterInput) {
       data: {
         name: input.name,
         email: input.email,
+        phone: input.phone,
         passwordHash,
         role: "CUSTOMER",
       },
