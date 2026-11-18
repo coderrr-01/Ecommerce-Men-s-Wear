@@ -21,22 +21,26 @@ export const getCurrentUser = cache(async () => {
   const session = await auth();
   if (!session?.user?.id) return null;
 
-  return prisma.user.findFirst({
-    where: {
-      id: session.user.id,
-      deletedAt: null,
-      isActive: true,
-    },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      image: true,
-      phone: true,
-      role: true,
-      createdAt: true,
-    },
-  });
+  return prisma.user
+    .findFirst({
+      where: {
+        id: session.user.id,
+        deletedAt: null,
+        isActive: true,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+        phone: true,
+        role: true,
+        sessionVersion: true,
+        forcePasswordChange: true,
+        createdAt: true,
+      },
+    })
+    .then((user) => (user && user.sessionVersion === session.user.sessionVersion ? user : null));
 });
 
 export async function requireUser(redirectTo = "/account") {

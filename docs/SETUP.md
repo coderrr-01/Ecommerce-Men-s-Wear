@@ -32,6 +32,9 @@ Optional providers:
 - Storage: Cloudinary credentials.
 - Email: `EMAIL_PROVIDER=console|resend`.
 - SMS: console adapter only for now.
+- Password reset email: set `EMAIL_PROVIDER=resend`, `RESEND_API_KEY` and `EMAIL_FROM`. The console
+  provider does not send reset links; reset requests clearly report the missing email configuration.
+- CSP rollout: `CSP_MODE=report-only` (default), `enforce`, or `off` for temporary diagnosis.
 
 All environment access is validated in `src/env.ts`.
 
@@ -134,6 +137,21 @@ Production safety:
 - The seed refuses to run when `NODE_ENV=production` unless `ALLOW_DEMO_SEED=true`.
 - In production, `SEED_ADMIN_PASSWORD` and `SEED_CUSTOMER_PASSWORD` are required.
 - Change or remove demo credentials before going live.
+- To create an operator account and disable the configured demo admin without deleting it, run
+  `pnpm admin:create -- <email> <password> <name> --disable-demo`. The account must use a unique,
+  strong password. The command deactivates the configured `siteConfig.seed.adminEmail` account and
+  revokes its sessions.
+
+### Security operations
+
+- Review [the security guide](./features/security.md) and test CSP in report-only mode before setting
+  `CSP_MODE=enforce`.
+- Rotate `AUTH_SECRET`: generate a new random value, update the deployment secret, and redeploy.
+  Existing sessions will become invalid.
+- Rotate PostgreSQL credentials at the database provider, update `DATABASE_URL` in the deployment
+  secret store, and redeploy. Never paste secrets into logs, issues or source control.
+- Before production, run `pnpm prisma migrate deploy` against the production `DATABASE_URL`, then
+  regenerate/build and deploy. Do not run `migrate dev` in production.
 
 ## 4. Run
 

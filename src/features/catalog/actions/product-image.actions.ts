@@ -11,6 +11,7 @@ import {
 } from "@/features/catalog/services/product-image.service";
 import { executeAction } from "@/lib/error-handler";
 import type { ApiResponse } from "@/types/api";
+import { recordAdminAudit } from "@/features/security/services/admin-audit.service";
 
 const imageIdSchema = z.object({
   productId: z.string().cuid(),
@@ -27,11 +28,15 @@ const orderSchema = z.object({
   primaryImageId: z.string().cuid(),
 });
 
-export async function updateProductImageAltAction(input: unknown): Promise<ApiResponse<{ id: string }>> {
+export async function updateProductImageAltAction(
+  input: unknown,
+): Promise<ApiResponse<{ id: string }>> {
   return executeAction("admin.product-images.alt", async () => {
-    await requireRole(ADMIN_ROLES, { throwOnDenied: true });
+    const user = await requireRole(ADMIN_ROLES, { throwOnDenied: true });
     const data = altTextSchema.parse(input);
-    return updateProductImageAlt(data.imageId, data.productId, data.altText);
+    const result = await updateProductImageAlt(data.imageId, data.productId, data.altText);
+    await recordAdminAudit(user.id, "product.image.alt.update", "product-image", data.imageId);
+    return result;
   });
 }
 
@@ -39,9 +44,11 @@ export async function reorderProductImagesAction(
   input: unknown,
 ): Promise<ApiResponse<{ primaryId: string }>> {
   return executeAction("admin.product-images.reorder", async () => {
-    await requireRole(ADMIN_ROLES, { throwOnDenied: true });
+    const user = await requireRole(ADMIN_ROLES, { throwOnDenied: true });
     const data = orderSchema.parse(input);
-    return setProductImageOrder(data.productId, data.imageIds, data.primaryImageId);
+    const result = await setProductImageOrder(data.productId, data.imageIds, data.primaryImageId);
+    await recordAdminAudit(user.id, "product.image.reorder", "product", data.productId);
+    return result;
   });
 }
 
@@ -49,8 +56,10 @@ export async function deleteProductImageAction(
   input: unknown,
 ): Promise<ApiResponse<{ id: string }>> {
   return executeAction("admin.product-images.delete", async () => {
-    await requireRole(["ADMIN"], { throwOnDenied: true });
+    const user = await requireRole(["ADMIN"], { throwOnDenied: true });
     const data = imageIdSchema.parse(input);
-    return deleteProductImage(data.imageId, data.productId);
+    const result = await deleteProductImage(data.imageId, data.productId);
+    await recordAdminAudit(user.id, "product.image.delete", "product-image", data.imageId);
+    return result;
   });
 }

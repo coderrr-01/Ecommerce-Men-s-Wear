@@ -9,13 +9,18 @@ const LEVEL_WEIGHT: Record<LogLevel, number> = {
 
 const configuredLevel = (process.env.LOG_LEVEL ?? "info") as LogLevel;
 const minimumWeight = LEVEL_WEIGHT[configuredLevel] ?? LEVEL_WEIGHT.info;
-const SENSITIVE_KEY = /password|secret|token|authorization|cookie|api[-_]?key/i;
+const SENSITIVE_KEY =
+  /password|secret|token|authorization|cookie|api[-_]?key|email|phone|mobile|address/i;
+
+function maskSensitiveText(value: string): string {
+  return value
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[email]")
+    .replace(/(?<!\d)(?:\+?91[\s-]?)?[6-9]\d{9}(?!\d)/g, "[phone]");
+}
 
 function serializeError(error: Error): Record<string, unknown> {
   return {
     name: error.name,
-    message: error.message,
-    ...(process.env.NODE_ENV === "development" && error.stack ? { stack: error.stack } : {}),
   };
 }
 
@@ -33,7 +38,7 @@ function redact(value: unknown, depth = 0): unknown {
     );
   }
 
-  return value;
+  return typeof value === "string" ? maskSensitiveText(value) : value;
 }
 
 function write(level: LogLevel, message: string, meta?: Record<string, unknown>): void {

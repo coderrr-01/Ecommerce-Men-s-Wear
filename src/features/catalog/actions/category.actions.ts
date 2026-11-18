@@ -10,29 +10,34 @@ import {
 import { requireRole } from "@/features/auth/services/session.service";
 import { executeAction } from "@/lib/error-handler";
 import type { ApiResponse } from "@/types/api";
+import { recordAdminAudit } from "@/features/security/services/admin-audit.service";
 
 export async function createCategoryAction(input: unknown): Promise<ApiResponse<{ id: string }>> {
   return executeAction("admin.category.create", async () => {
-    await requireRole(ADMIN_ROLES, { throwOnDenied: true });
-    return createAdminCategory(categorySchema.parse(input));
+    const user = await requireRole(ADMIN_ROLES, { throwOnDenied: true });
+    const category = await createAdminCategory(categorySchema.parse(input));
+    await recordAdminAudit(user.id, "category.create", "category", category.id);
+    return category;
   });
 }
 
-export async function updateCategoryAction(
-  input: unknown,
-): Promise<ApiResponse<{ id: string }>> {
+export async function updateCategoryAction(input: unknown): Promise<ApiResponse<{ id: string }>> {
   return executeAction("admin.category.update", async () => {
-    await requireRole(ADMIN_ROLES, { throwOnDenied: true });
+    const user = await requireRole(ADMIN_ROLES, { throwOnDenied: true });
     const data = categorySchema.parse(input);
     if (!data.id) throw new Error("Category id is required.");
-    return updateAdminCategory(data.id, data);
+    const category = await updateAdminCategory(data.id, data);
+    await recordAdminAudit(user.id, "category.update", "category", category.id);
+    return category;
   });
 }
 
 export async function deleteCategoryAction(id: unknown): Promise<ApiResponse<{ id: string }>> {
   return executeAction("admin.category.delete", async () => {
-    await requireRole(["ADMIN"], { throwOnDenied: true });
+    const user = await requireRole(["ADMIN"], { throwOnDenied: true });
     const parsedId = categorySchema.shape.id.unwrap().parse(id);
-    return deleteAdminCategory(parsedId);
+    const result = await deleteAdminCategory(parsedId);
+    await recordAdminAudit(user.id, "category.delete", "category", result.id);
+    return result;
   });
 }

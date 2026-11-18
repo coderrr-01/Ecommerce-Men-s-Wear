@@ -7,17 +7,13 @@ import {
   enrollNewsletter,
   submitContactMessage,
 } from "@/features/communications/services/communication.service";
-import { enforceRateLimit } from "@/lib/rate-limiter";
+import { enforceRateLimit, getClientIp } from "@/lib/rate-limiter";
 import { safeAction } from "@/lib/safe-action";
 import type { ApiResponse } from "@/types/api";
 
 async function requestIp() {
   const requestHeaders = await headers();
-  return (
-    requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    requestHeaders.get("x-real-ip")?.trim() ??
-    "unknown"
-  );
+  return getClientIp(requestHeaders) ?? "unknown";
 }
 
 export async function newsletterSignupAction(
@@ -31,7 +27,7 @@ export async function newsletterSignupAction(
       })
       .parse(input);
     if (data.honeypot) return { accepted: true };
-    enforceRateLimit("newsletter", await requestIp(), 5, 60 * 60 * 1000);
+    await enforceRateLimit("newsletter", await requestIp(), 5, 60 * 60 * 1000);
     const user = await getCurrentUser();
     await enrollNewsletter(data.email, user?.id ?? null);
     return { accepted: true };
@@ -53,7 +49,7 @@ export async function contactFormAction(
       })
       .parse(input);
     if (data.honeypot) return { accepted: true };
-    enforceRateLimit("contact", await requestIp(), 3, 60 * 60 * 1000);
+    await enforceRateLimit("contact", await requestIp(), 3, 60 * 60 * 1000);
     const user = await getCurrentUser();
     await submitContactMessage({ ...data, phone: data.phone ?? "", userId: user?.id ?? null });
     return { accepted: true };

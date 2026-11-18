@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { ADMIN_ROLES } from "@/config/constants";
 import { getCurrentUser, requireRole } from "@/features/auth/services/session.service";
 import { getCartOwner } from "@/features/cart/guest-session";
-import { enforceRateLimit } from "@/lib/rate-limiter";
+import { enforceRateLimit, getClientIp } from "@/lib/rate-limiter";
 import {
   previewCoupon,
   saveCouponData,
@@ -15,6 +15,7 @@ import {
 import { executeAction } from "@/lib/error-handler";
 import { ValidationError } from "@/lib/errors";
 import type { ApiResponse } from "@/types/api";
+import { recordAdminAudit } from "@/features/security/services/admin-audit.service";
 
 const couponSchema = z
   .object({
@@ -28,10 +29,10 @@ const couponSchema = z
       .transform((value) => value.toUpperCase()),
     type: z.enum(["PERCENTAGE", "FIXED"]),
     value: z.number().int().min(1).max(100_000_000),
-    minOrderValue: z.number().int().min(0),
-    maxDiscount: z.number().int().positive().nullable(),
-    usageLimit: z.number().int().positive().nullable(),
-    perUserLimit: z.number().int().positive().nullable(),
+    minOrderValue: z.number().int().min(0).max(2_147_483_647),
+    maxDiscount: z.number().int().positive().max(2_147_483_647).nullable(),
+    usageLimit: z.number().int().positive().max(2_147_483_647).nullable(),
+    perUserLimit: z.number().int().positive().max(2_147_483_647).nullable(),
     startsAt: z.string().datetime().nullable(),
     expiresAt: z.string().datetime().nullable(),
     isActive: z.boolean(),
@@ -56,8 +57,8 @@ export async function checkCouponAction(
       })
       .parse(input);
     const requestHeaders = await headers();
-    const ip = requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-    enforceRateLimit("coupon-check", ip, 10, 60_000);
+    const ip = getClientIp(requestHeaders) ?? "unknown";
+    await enforceRateLimit("coupon-check", ip, 10, 60_000);
     const user = await getCurrentUser();
     const owner = await getCartOwner(user?.id ?? undefined);
     if (!owner) throw new ValidationError("Your bag is empty.");
@@ -68,13 +69,14 @@ export async function checkCouponAction(
 
 export async function saveCouponAction(input: unknown): Promise<ApiResponse<{ saved: boolean }>> {
   return executeAction("admin.coupons.save", async () => {
-    await requireRole(ADMIN_ROLES, { throwOnDenied: true });
+    const user = await requireRole(ADMIN_ROLES, { throwOnDenied: true });
     const data = couponSchema.parse(input);
-    await saveCouponData({
+    const saved = await saveCouponData({
       ...data,
       startsAt: data.startsAt ? new Date(data.startsAt) : null,
       expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
     });
+    await recordAdminAudit(user.id, "coupon.save", "coupon", saved.id);
     revalidatePath("/admin/coupons");
     return { saved: true };
   });
@@ -82,8 +84,9 @@ export async function saveCouponAction(input: unknown): Promise<ApiResponse<{ sa
 
 export async function archiveCouponAction(id: unknown): Promise<ApiResponse<{ id: string }>> {
   return executeAction("admin.coupons.archive", async () => {
-    await requireRole(ADMIN_ROLES, { throwOnDenied: true });
+    const user = await requireRole(["ADMIN"], { throwOnDenied: true });
     const result = await archiveCouponData(z.string().cuid().parse(id));
+    await recordAdminAudit(user.id, "coupon.archive", "coupon", result.id);
     revalidatePath("/admin/coupons");
     return result;
   });

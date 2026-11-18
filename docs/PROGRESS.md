@@ -8,6 +8,33 @@ Phase 2 Admin Catalog Management, the Diamond Selection storefront refresh, What
 Phase 5 Part A, and Phase 5 Part B are implemented in code. The Part A and Part B migrations have
 been generated with Prisma and applied to the configured local PostgreSQL database.
 
+## Phase 6 Part C1 security hardening (2026-11-18)
+
+- Added report-only-by-default nonce CSP, response security headers, CSP reports, safe error
+  boundaries, and strengthened structured log masking.
+- Added atomic PostgreSQL rate-limit buckets for login, registration, orders, coupon checks,
+  communications, reviews, returns, password reset and image uploads. Public flows fail open on
+  limiter storage errors; login/reset fail closed.
+- Added generic throttled login behavior, 10-character password checks, administrator/staff
+  eight-hour token expiry, session-version revocation, password-reset request/consume flows and
+  forced password-change support.
+- Added audit records for catalog/product/image/stock/order/coupon changes, destructive action
+  checks, and `pnpm admin:create -- <email> <password> <name> [--disable-demo]`.
+- Migration `20261118070548_phase6_security_hardening` was generated using Prisma and applied to the
+  configured local PostgreSQL database. A second `pnpm db:generate` completed after an initial
+  Windows DLL rename lock.
+- `pnpm lint`, `pnpm typecheck`, `pnpm build`, and `pnpm test` pass (20 files, 83 tests). An
+  earlier default 20-worker test run once timed out the existing PDF test; subsequent standard runs
+  passed.
+- `pnpm audit` reports two high and one moderate transitive findings (details and rationale in
+  `docs/features/security.md`); no safe fix was applied.
+- Local HTTP smoke checks confirmed CSP report-only and enforce headers, standard security headers,
+  auth/home responses and a 204 report endpoint response. No authenticated browser workflow was
+  exercised.
+- **Not yet verified:** Vercel serverless behavior, real provider email delivery, exhaustive Zod
+  schema review, and interactive browser behavior. Role-change auditing is not applicable yet
+  because no user-role management action exists.
+
 ## Phase 5 Part B (2026-11-17)
 
 - Added signed-in wishlist persistence and idempotent guest localStorage merge through the existing

@@ -29,7 +29,7 @@
 
 | Model                    | Purpose                                  | Notable constraints/indexes                                                                          |
 | ------------------------ | ---------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `User`                   | Customers and staff                      | unique `email`; `role`; `isActive`; `deletedAt`                                                      |
+| `User`                   | Customers and staff                      | unique `email`; `role`; `isActive`; `sessionVersion`; forced-password-change flag; `deletedAt`       |
 | `Address`                | Saved shipping/billing addresses         | indexed `userId`; soft delete                                                                        |
 | `Category`               | Menswear taxonomy, self-referencing tree | unique `slug`; `parentId`                                                                            |
 | `Product`                | Catalogue product                        | unique `slug`; category; paise `basePrice`; status/featured/new-arrival flags; size set; soft delete |
@@ -53,6 +53,9 @@
 | `ReturnRequestPhoto`     | Storage-provider return images           | return request and creation-time index                                                               |
 | `NewsletterSubscription` | Newsletter records                       | unique normalized email and optional unique user                                                     |
 | `ContactMessage`         | Plain-text contact submissions           | optional user, bounded fields and creation-time index                                                |
+| `RateLimitBucket`        | Shared serverless fixed-window limits    | primary key `(keyHash, windowStart)`; indexed expiry; identity values use keyed HMAC-SHA-256         |
+| `PasswordResetToken`     | Single-use password reset tokens         | unique SHA-256 token hash; user/expiry index; 30-minute expiry enforced in service                   |
+| `AdminAuditLog`          | Sensitive admin operation history        | actor/time and entity/time indexes; structured details must not contain customer PII                 |
 | `Banner`                 | Home/merchandising placements            | placement, schedule, sort order, soft delete                                                         |
 | `SizeGuide`              | JSON size tables                         | unique `slug`; optional category                                                                     |
 | `StoreSettings`          | Singleton operational settings           | `id` defaults to `"default"`; tax bps, shipping fees, COGS flags                                     |
@@ -68,6 +71,7 @@ Committed migrations:
 - `prisma/migrations/20261117063053_whatsapp_checkout/migration.sql`
 - `prisma/migrations/20261117105952_phase5_order_experience/migration.sql`
 - `prisma/migrations/20261117122300_phase5_part_b/migration.sql`
+- `prisma/migrations/20261118070548_phase6_security_hardening/migration.sql`
 
 The admin migration adds `ProductSizeType`, product fields used by the catalog editor, and the
 `stock_movements` table. It was generated with Prisma and applied to the configured PostgreSQL
@@ -94,6 +98,11 @@ enum field and `OrderItem.productSlug`. Generate and apply the migration against
 database interactively:
 
 ```powershell
+
+Phase 6 security adds `sessionVersion` and `forcePasswordChange` on users, plus
+`rate_limit_buckets`, `password_reset_tokens`, and `admin_audit_logs`. The migration was generated
+and applied with `pnpm prisma migrate dev --name phase6_security_hardening`. For production, deploy
+the committed migration with `pnpm prisma migrate deploy`; do not run `migrate dev` in production.powershell
 pnpm exec prisma migrate dev --name whatsapp_checkout
 ```
 

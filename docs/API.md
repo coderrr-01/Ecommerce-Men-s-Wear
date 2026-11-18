@@ -91,13 +91,40 @@ dependency is required. Uploads use the configured `StorageProvider` (Cloudinary
 
 ### Authentication — `src/features/auth/actions/auth.actions.ts`
 
-| Action           | Input                                       | Behaviour                                                                                    |
-| ---------------- | ------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `loginAction`    | email, password, optional safe `redirectTo` | Validates, calls `signIn("credentials")`, redirects to a safe path or returns an error state |
-| `registerAction` | name, email, password, confirm password     | Creates a customer, hashes the password, rejects duplicates, then redirects to login         |
-| `logoutAction`   | none                                        | Signs out and redirects home                                                                 |
+| Action           | Input                                       | Behaviour                                                                                      |
+| ---------------- | ------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `loginAction`    | email, password, optional safe `redirectTo` | Validates, calls `signIn("credentials")`, redirects to a safe path or returns an error state   |
+| `registerAction` | name, email, password, confirm password     | Creates a customer and hashes the password; duplicate-safe response avoids account enumeration |
+| `logoutAction`   | none                                        | Signs out and redirects home                                                                   |
 
 Redirect targets are checked by `isSafeRedirectPath` to prevent open redirects. Authentication errors are intentionally generic.
+
+### Password reset and security
+
+- `requestPasswordResetAction`: email address; IP/email rate-limited. Responses do not reveal
+  whether an account exists. It sends mail only when `EMAIL_PROVIDER=resend` and
+  `RESEND_API_KEY` is configured; otherwise it explicitly reports that reset email is unavailable.
+- `resetPasswordAction`: token, new password and confirmation; rate-limited by IP. Tokens are hashed
+  in storage, expire after 30 minutes and are consumed once in a transaction; password changes
+  increment `sessionVersion`, invalidating existing sessions.
+- `changeOwnPasswordAction`: authenticated current-password verification and password update; also
+  invalidates all existing sessions.
+- `POST /api/security/csp-report`: accepts bounded CSP violation reports and logs only directive,
+  disposition and blocked origin (not full report URLs).
+
+Rate-limit errors include a retry-after estimate. PostgreSQL bucket keys are hashed; public actions
+fail open on limiter storage errors, while login and password-reset flows fail closed. Configure
+`CSP_MODE=report-only` (default), test the storefront, then explicitly set `enforce` to enforce the
+nonce CSP; use `off` only for local diagnosis.
+
+### Admin authorization audit
+
+Each current admin mutation re-reads the active database user and checks role in its server action:
+catalog product/category/image actions, inventory stock actions, coupon save/archive, order status
+and details, review moderation, return decisions and image upload. CSV routes for orders, messages
+and inventory also use role guards. Destructive category/product/image/coupon archive operations
+require ADMIN. There is currently no user-role management action; when introduced, it must be
+ADMIN-only and emit an audit record. Admin layout checks are not a substitute for these boundaries.
 
 ### Cart — `src/features/cart/actions/cart.actions.ts`
 

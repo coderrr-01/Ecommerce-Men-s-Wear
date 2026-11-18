@@ -10,7 +10,14 @@ export const categorySchema = z.object({
     .max(120)
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use lowercase letters, numbers and hyphens."),
   description: z.string().trim().max(1000).nullable(),
-  imageUrl: z.union([z.literal(""), z.string().url()]),
+  imageUrl: z.union([
+    z.literal(""),
+    z
+      .string()
+      .max(2048)
+      .url()
+      .refine((value) => new URL(value).protocol === "https:", "Image URLs must use HTTPS."),
+  ]),
   parentId: z.union([z.literal(""), z.string().cuid()]),
   isActive: z.boolean(),
   sortOrder: z.number().int().min(0).max(10000),

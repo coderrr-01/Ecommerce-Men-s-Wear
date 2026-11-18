@@ -12,6 +12,7 @@ import {
 } from "@/features/catalog/services/product-admin.service";
 import { executeAction } from "@/lib/error-handler";
 import type { ApiResponse } from "@/types/api";
+import { recordAdminAudit } from "@/features/security/services/admin-audit.service";
 
 const slugCheckSchema = z.object({
   slug: z.string().trim().min(2).max(180),
@@ -37,6 +38,7 @@ export async function saveProductAction(input: unknown): Promise<ApiResponse<{ i
   return executeAction("admin.product.save", async () => {
     const user = await requireRole(ADMIN_ROLES, { throwOnDenied: true });
     const product = await saveProduct(productSchema.parse(input), user.id);
+    await recordAdminAudit(user.id, "product.save", "product", product.id);
     return { id: product.id };
   });
 }
@@ -60,6 +62,10 @@ export async function bulkProductsAction(
     if (data.action === "delete") {
       await requireRole(["ADMIN"], { throwOnDenied: true });
     }
-    return manageProducts(data.ids, data.action, user.id);
+    const result = await manageProducts(data.ids, data.action, user.id);
+    await recordAdminAudit(user.id, `product.${data.action}`, "product", undefined, {
+      count: result.updated,
+    });
+    return result;
   });
 }

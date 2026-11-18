@@ -57,7 +57,6 @@ export async function executeAction<T>(
       logger.warn("action.failed", {
         action: actionName,
         code: apiError.code,
-        message: apiError.message,
       });
     }
 

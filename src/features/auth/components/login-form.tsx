@@ -14,9 +14,10 @@ import { initialAuthState } from "@/features/auth/types";
 interface LoginFormProps {
   redirectTo?: string;
   registered?: boolean;
+  passwordChanged?: boolean;
 }
 
-export function LoginForm({ redirectTo, registered }: LoginFormProps) {
+export function LoginForm({ redirectTo, registered, passwordChanged }: LoginFormProps) {
   const [state, formAction, isPending] = useActionState(loginAction, initialAuthState);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -35,6 +36,14 @@ export function LoginForm({ redirectTo, registered }: LoginFormProps) {
           className="mb-5 rounded-md border border-accent/30 bg-accent/5 px-3 py-2 text-sm text-accent"
         >
           Account created. Sign in to continue.
+        </p>
+      ) : null}
+      {passwordChanged ? (
+        <p
+          role="status"
+          className="mb-5 rounded-md border border-accent/30 bg-accent/5 px-3 py-2 text-sm text-accent"
+        >
+          Password updated. Sign in again to continue.
         </p>
       ) : null}
 

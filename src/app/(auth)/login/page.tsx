@@ -10,6 +10,7 @@ interface LoginPageProps {
   searchParams: Promise<{
     redirectTo?: string | string[];
     registered?: string | string[];
+    passwordChanged?: string | string[];
   }>;
 }
 
@@ -23,5 +24,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       ? params.redirectTo
       : undefined;
 
-  return <LoginForm redirectTo={redirectTo} registered={params.registered === "1"} />;
+  return (
+    <LoginForm
+      redirectTo={redirectTo}
+      registered={params.registered === "1"}
+      passwordChanged={params.passwordChanged === "1"}
+    />
+  );
 }

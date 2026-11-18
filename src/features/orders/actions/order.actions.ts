@@ -15,6 +15,8 @@ import {
 import { normalizeError } from "@/lib/error-handler";
 import { logger } from "@/lib/logger";
 import type { ApiResponse } from "@/types/api";
+import { getClientIp } from "@/lib/rate-limiter";
+import { recordAdminAudit } from "@/features/security/services/admin-audit.service";
 
 async function safeOrderAction<T>(
   action: string,
@@ -41,9 +43,7 @@ export async function placeOrderAction(
     const user = await getCurrentUser();
     const owner = await getCartOwner(user?.id);
     const requestHeaders = await headers();
-    const ipAddress =
-      requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-      requestHeaders.get("x-real-ip")?.trim();
+    const ipAddress = getClientIp(requestHeaders);
     const result = await createCustomerOrder(data, owner, user?.id ?? null, ipAddress);
     revalidatePath("/cart");
     revalidatePath("/admin/orders");
@@ -58,6 +58,14 @@ export async function updateOrderStatusAction(
   return safeOrderAction("admin.orders.update-status", async () => {
     const user = await requireRole(ADMIN_ROLES, { throwOnDenied: true });
     const result = await updateAdminOrderStatus(input, user.id);
+    const auditInput = input && typeof input === "object" ? (input as Record<string, unknown>) : {};
+    await recordAdminAudit(
+      user.id,
+      "order.status.update",
+      "order",
+      typeof auditInput.orderId === "string" ? auditInput.orderId : undefined,
+      typeof auditInput.status === "string" ? { status: auditInput.status } : undefined,
+    );
     revalidatePath("/admin/orders");
     revalidatePath("/admin");
     revalidatePath("/account/orders");
@@ -72,6 +80,13 @@ export async function saveAdminOrderDetailsAction(
   return safeOrderAction("admin.orders.save-details", async () => {
     const user = await requireRole(ADMIN_ROLES, { throwOnDenied: true });
     const result = await updateAdminOrderDetails(input, user.id);
+    const auditInput = input && typeof input === "object" ? (input as Record<string, unknown>) : {};
+    await recordAdminAudit(
+      user.id,
+      "order.details.update",
+      "order",
+      typeof auditInput.orderId === "string" ? auditInput.orderId : undefined,
+    );
     revalidatePath("/admin/orders");
     revalidatePath("/admin/orders/[id]", "page");
     return result;

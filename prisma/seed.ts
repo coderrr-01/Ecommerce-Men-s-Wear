@@ -81,8 +81,9 @@ async function seedUsers() {
     update: {
       name: siteConfig.seed.adminName,
       role: "ADMIN",
-      isActive: true,
       passwordHash: adminHash,
+      sessionVersion: { increment: 1 },
+      forcePasswordChange: ADMIN_PASSWORD === DEMO_ADMIN_PASSWORD,
     },
     create: {
       email: ADMIN_EMAIL,
@@ -90,6 +91,7 @@ async function seedUsers() {
       role: "ADMIN",
       isActive: true,
       passwordHash: adminHash,
+      forcePasswordChange: ADMIN_PASSWORD === DEMO_ADMIN_PASSWORD,
       emailVerified: new Date(),
     },
   });

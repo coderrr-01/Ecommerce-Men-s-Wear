@@ -6,6 +6,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useSyncExternalStore }
 import type { CSSProperties } from "react";
 
 import { siteConfig } from "@/config/site.config";
+import { useCspNonce } from "@/components/shared/motion-provider";
 
 import "./intro-preloader.css";
 
@@ -129,9 +130,10 @@ function waitForAssets(signal: AbortSignal) {
   });
 }
 
-function IntroGuardScript() {
+function IntroGuardScript({ nonce }: { nonce?: string }) {
   return (
     <script
+      nonce={nonce}
       type={typeof window === "undefined" ? "text/javascript" : "text/plain"}
       suppressHydrationWarning
       dangerouslySetInnerHTML={{ __html: guardScript }}
@@ -140,6 +142,7 @@ function IntroGuardScript() {
 }
 
 export function IntroPreloader() {
+  const nonce = useCspNonce();
   const pathname = usePathname();
   const {
     active: introActive,
@@ -274,7 +277,7 @@ export function IntroPreloader() {
     };
   }, [finishIntro, introActive, pathname]);
 
-  if (!introActive || pathname !== "/") return <IntroGuardScript />;
+  if (!introActive || pathname !== "/") return <IntroGuardScript nonce={nonce} />;
 
   const { durations, images, brandWord } = siteConfig.intro;
   const rootStyle: IntroStyle = {
@@ -292,7 +295,7 @@ export function IntroPreloader() {
 
   return (
     <>
-      <IntroGuardScript />
+      <IntroGuardScript nonce={nonce} />
       <div
         id="intro-preloader"
         className="ipl-root"

@@ -7,12 +7,22 @@ import { requireRole, requireUser } from "@/features/auth/services/session.servi
 import { moderateReview, submitReview } from "@/features/reviews/services/review.service";
 import { safeAction } from "@/lib/safe-action";
 import type { ApiResponse } from "@/types/api";
+import { enforceRateLimit, getClientIp } from "@/lib/rate-limiter";
+import { headers } from "next/headers";
+import { recordAdminAudit } from "@/features/security/services/admin-audit.service";
 
 export async function submitReviewAction(
   formData: FormData,
 ): Promise<ApiResponse<{ id: string; status: string }>> {
   return safeAction("reviews.submit", async () => {
     const user = await requireUser("/account");
+    const requestHeaders = await headers();
+    await enforceRateLimit(
+      "review-submit",
+      `${user.id}:${getClientIp(requestHeaders) ?? "unknown"}`,
+      5,
+      60 * 60 * 1000,
+    );
     const parsed = z
       .object({
         productId: z.string().cuid(),
@@ -39,11 +49,14 @@ export async function moderateReviewAction(
   input: unknown,
 ): Promise<ApiResponse<{ id: string; status: string }>> {
   return safeAction("admin.reviews.moderate", async () => {
-    await requireRole(ADMIN_ROLES, { throwOnDenied: true });
+    const user = await requireRole(ADMIN_ROLES, { throwOnDenied: true });
     const data = z
       .object({ id: z.string().cuid(), status: z.enum(["APPROVED", "REJECTED"]) })
       .parse(input);
     const result = await moderateReview(data.id, data.status);
+    await recordAdminAudit(user.id, "review.moderate", "review", data.id, {
+      status: data.status,
+    });
     revalidatePath("/admin/reviews");
     revalidatePath("/products/[slug]", "page");
     return result;

@@ -7,12 +7,22 @@ import { requireRole, requireUser } from "@/features/auth/services/session.servi
 import { updateReturnRequest, requestReturn } from "@/features/returns/services/return.service";
 import { safeAction } from "@/lib/safe-action";
 import type { ApiResponse } from "@/types/api";
+import { enforceRateLimit, getClientIp } from "@/lib/rate-limiter";
+import { headers } from "next/headers";
+import { recordAdminAudit } from "@/features/security/services/admin-audit.service";
 
 export async function requestReturnAction(
   formData: FormData,
 ): Promise<ApiResponse<{ id: string; orderId: string }>> {
   return safeAction("returns.request", async () => {
     const user = await requireUser("/account/orders");
+    const requestHeaders = await headers();
+    await enforceRateLimit(
+      "return-request",
+      `${user.id}:${getClientIp(requestHeaders) ?? "unknown"}`,
+      3,
+      60 * 60 * 1000,
+    );
     const data = z
       .object({
         orderItemId: z.string().cuid(),
@@ -45,6 +55,9 @@ export async function updateReturnRequestAction(
       })
       .parse(input);
     const result = await updateReturnRequest(data.id, data.action, user.id);
+    await recordAdminAudit(user.id, "return.request.update", "return-request", data.id, {
+      action: data.action,
+    });
     revalidatePath("/admin/returns");
     revalidatePath("/admin/orders");
     revalidatePath("/account/orders");

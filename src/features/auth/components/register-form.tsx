@@ -24,6 +24,14 @@ export function RegisterForm() {
       </div>
 
       <form action={formAction} className="space-y-5" noValidate>
+        {state.successMessage ? (
+          <p
+            role="status"
+            className="rounded-md border border-accent/30 bg-accent/5 px-3 py-2 text-sm text-accent"
+          >
+            {state.successMessage}
+          </p>
+        ) : null}
         <div className="space-y-2">
           <Label htmlFor="name">Full name</Label>
           <Input
@@ -78,7 +86,7 @@ export function RegisterForm() {
             aria-invalid={Boolean(state.fieldErrors?.password)}
           />
           <p className="text-xs text-muted-foreground">
-            At least 8 characters, including a letter and a number.
+            At least 10 characters, including a letter and a number. Common passwords are blocked.
           </p>
           {state.fieldErrors?.password ? (
             <p className="text-sm text-destructive">{state.fieldErrors.password}</p>

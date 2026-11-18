@@ -103,7 +103,7 @@ export async function createCustomerOrder(
   );
   if (existing) return existing;
 
-  enforceOrderRateLimit(input.phone, ipAddress);
+  await enforceOrderRateLimit(input.phone, ipAddress);
   const address = {
     fullName: input.fullName,
     phone: input.phone,

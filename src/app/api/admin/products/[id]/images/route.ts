@@ -4,26 +4,25 @@ import { z, ZodError } from "zod";
 
 import { ADMIN_ROLES } from "@/config/constants";
 import { requireRole } from "@/features/auth/services/session.service";
-import {
-  MAX_PRODUCT_IMAGE_REQUEST_BYTES,
-} from "@/features/catalog/product-image.utils";
+import { MAX_PRODUCT_IMAGE_REQUEST_BYTES } from "@/features/catalog/product-image.utils";
 import { uploadProductImage } from "@/features/catalog/services/product-image.service";
 import { AppError, ValidationError } from "@/lib/errors";
 import { normalizeError } from "@/lib/error-handler";
 import { logger } from "@/lib/logger";
 import type { ApiResponse } from "@/types/api";
+import { enforceRateLimit, getClientIp } from "@/lib/rate-limiter";
+import { recordAdminAudit } from "@/features/security/services/admin-audit.service";
 
 export const runtime = "nodejs";
 
 function failure(error: unknown, productId: string) {
   const apiError = normalizeError(error);
   if (apiError.code === "INTERNAL_ERROR") {
-    logger.error("admin.product-images.upload_failed", { productId, error });
+    logger.error("admin.product-images.upload_failed", { productId, code: apiError.code });
   } else {
     logger.warn("admin.product-images.upload_rejected", {
       productId,
       code: apiError.code,
-      message: apiError.message,
     });
   }
   const status = error instanceof AppError ? error.status : error instanceof ZodError ? 422 : 500;
@@ -33,13 +32,16 @@ function failure(error: unknown, productId: string) {
   );
 }
 
-export async function POST(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) {
+export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
   try {
-    await requireRole(ADMIN_ROLES, { throwOnDenied: true });
+    const user = await requireRole(ADMIN_ROLES, { throwOnDenied: true });
+    await enforceRateLimit(
+      "image-upload",
+      getClientIp(request.headers) ?? "unknown",
+      20,
+      60 * 60 * 1000,
+    );
     const productId = z.string().cuid().parse(id);
     const lengthHeader = request.headers.get("content-length");
     if (lengthHeader !== null) {
@@ -65,6 +67,9 @@ export async function POST(
     }
 
     const image = await uploadProductImage(productId, file);
+    await recordAdminAudit(user.id, "product.image.upload", "product-image", image.id, {
+      productId,
+    });
     return NextResponse.json<ApiResponse<typeof image>>(
       { success: true, data: image },
       { headers: { "Cache-Control": "no-store" } },

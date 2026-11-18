@@ -74,18 +74,20 @@ enum ReviewStatus {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  image         String?
-  passwordHash  String?
-  phone         String?
-  role          Role      @default(CUSTOMER)
-  isActive      Boolean   @default(true)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  deletedAt     DateTime?
+  id                  String    @id @default(cuid())
+  name                String?
+  email               String    @unique
+  emailVerified       DateTime?
+  image               String?
+  passwordHash        String?
+  phone               String?
+  role                Role      @default(CUSTOMER)
+  isActive            Boolean   @default(true)
+  sessionVersion      Int       @default(0)
+  forcePasswordChange Boolean   @default(false)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  deletedAt           DateTime?
 
   addresses              Address[]
   carts                  Cart[]
@@ -99,6 +101,8 @@ model User {
   orderNotes             OrderInternalNote[]     @relation("OrderInternalNoteAuthor")
   returnRequests         ReturnRequest[]         @relation("ReturnRequestUser")
   reviewedReturnRequests ReturnRequest[]         @relation("ReturnRequestReviewer")
+  passwordResetTokens    PasswordResetToken[]
+  securityAuditLogs      AdminAuditLog[]         @relation("SecurityAuditActor")
 
   @@index([role])
   @@index([deletedAt])
@@ -586,6 +590,47 @@ model ContactMessage {
 
   @@index([createdAt])
   @@map("contact_messages")
+}
+
+model RateLimitBucket {
+  keyHash     String   @db.VarChar(64)
+  windowStart DateTime
+  count       Int      @default(0)
+  expiresAt   DateTime
+
+  @@id([keyHash, windowStart])
+  @@index([expiresAt])
+  @@map("rate_limit_buckets")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique @db.VarChar(64)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+  @@map("password_reset_tokens")
+}
+
+model AdminAuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  action     String   @db.VarChar(100)
+  entityType String   @db.VarChar(80)
+  entityId   String?  @db.VarChar(100)
+  details    Json?
+  createdAt  DateTime @default(now())
+
+  actor User? @relation("SecurityAuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([actorId, createdAt])
+  @@index([entityType, entityId, createdAt])
+  @@map("admin_audit_logs")
 }
 
 model Banner {

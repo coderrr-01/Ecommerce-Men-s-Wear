@@ -10,12 +10,12 @@ import { AppError } from "@/lib/errors";
 import { logger } from "@/lib/logger";
 import { fieldErrors } from "@/lib/validation";
 import { isSafeRedirectPath } from "@/lib/utils";
+import { getClientIp, enforceRateLimit } from "@/lib/rate-limiter";
+import { headers } from "next/headers";
 
 function authErrorMessage(error: AuthError): string {
-  if (error.type === "CredentialsSignin") {
-    return "Email or password is incorrect.";
-  }
-  return "We could not sign you in right now. Please try again.";
+  void error;
+  return "Email or password is incorrect.";
 }
 
 export async function loginAction(
@@ -75,32 +75,26 @@ export async function registerAction(
   }
 
   try {
+    const requestHeaders = await headers();
+    await enforceRateLimit(
+      "register-ip",
+      getClientIp(requestHeaders) ?? "unknown",
+      5,
+      60 * 60 * 1000,
+    );
     await registerCustomer(parsed.data);
   } catch (error) {
-    if (error instanceof AppError) {
+    if (error instanceof AppError && error.code === "RATE_LIMITED") {
       return { status: "error", message: error.message };
     }
-    logger.error("auth.register_failed", { error });
-    return {
-      status: "error",
-      message: "We could not create your account. Please try again.",
-    };
+    logger.error("auth.register_failed", { reason: "storage_or_unexpected_error" });
+    return { status: "error", message: "We could not create your account. Please try again." };
   }
 
-  try {
-    await signIn("credentials", {
-      email: parsed.data.email,
-      password: parsed.data.password,
-      redirectTo: "/account",
-    });
-  } catch (error) {
-    if (error instanceof AuthError) {
-      return { status: "error", message: authErrorMessage(error) };
-    }
-    throw error;
-  }
-
-  return { status: "idle" };
+  return {
+    status: "success",
+    successMessage: "If an account can be created with these details, you can now try signing in.",
+  };
 }
 
 export async function logoutAction() {

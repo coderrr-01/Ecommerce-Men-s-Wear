@@ -6,22 +6,23 @@ declare module "next-auth" {
     user: {
       id: string;
       role: Role;
+      sessionVersion: number;
+      forcePasswordChange: boolean;
     } & DefaultSession["user"];
   }
 
   interface User {
     role: Role;
+    sessionVersion: number;
+    forcePasswordChange: boolean;
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
     role?: Role;
-  }
-}
-
-declare module "@auth/core/jwt" {
-  interface JWT {
-    role?: Role;
+    sessionVersion?: number;
+    forcePasswordChange?: boolean;
+    authenticatedAt?: number;
   }
 }

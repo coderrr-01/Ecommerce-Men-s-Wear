@@ -25,7 +25,7 @@ describe("registerSchema", () => {
     const result = registerSchema.safeParse({
       name: "Arjun Mehta",
       email: "arjun@example.com",
-      password: "Passw0rd",
+      password: "SecurePass123",
       confirmPassword: "different",
     });
 
@@ -41,6 +41,17 @@ describe("registerSchema", () => {
       email: "arjun@example.com",
       password: "onlyletters",
       confirmPassword: "onlyletters",
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects passwords that exceed bcrypt's UTF-8 byte limit", () => {
+    const result = registerSchema.safeParse({
+      name: "Arjun Mehta",
+      email: "arjun@example.com",
+      password: `Abc123${"💎".repeat(18)}`,
+      confirmPassword: `Abc123${"💎".repeat(18)}`,
     });
 
     expect(result.success).toBe(false);

@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 
 import { themeCss } from "@/config/theme";
 import { siteConfig } from "@/config/site.config";
@@ -40,14 +41,15 @@ export const viewport: Viewport = {
   colorScheme: "light",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
     <html lang={siteConfig.locale} data-scroll-behavior="smooth">
       <head>
-        <style dangerouslySetInnerHTML={{ __html: themeCss }} />
+        <style nonce={nonce} dangerouslySetInnerHTML={{ __html: themeCss }} />
       </head>
       <body>
-        <MotionProvider>{children}</MotionProvider>
+        <MotionProvider nonce={nonce}>{children}</MotionProvider>
       </body>
     </html>
   );

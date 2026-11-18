@@ -57,7 +57,12 @@ export async function getCoupons() {
 }
 
 export async function saveCouponData(input: Parameters<typeof saveCoupon>[0]) {
-  return saveCoupon({ ...input, code: normalizeCouponCode(input.code) });
+  const saved = await saveCoupon({ ...input, code: normalizeCouponCode(input.code) });
+  if ("count" in saved) {
+    if (!saved.count || !input.id) throw new ValidationError("Coupon could not be found.");
+    return { id: input.id };
+  }
+  return saved;
 }
 
 export async function archiveCouponData(id: string) {

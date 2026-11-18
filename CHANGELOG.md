@@ -2,6 +2,31 @@
 
 All notable changes to Diamond Selection are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow SemVer.
 
+## 2026-11-18 — Phase 6 Part C1 security hardening
+
+### Added
+
+- Added response security headers and a nonce-based Content Security Policy that defaults to
+  report-only mode (`CSP_MODE=report-only|enforce|off`), plus a bounded CSP report endpoint.
+- Added PostgreSQL-backed hashed rate-limit buckets, short admin/staff session expiry, per-email/IP
+  login throttling, password complexity checks and single-use, hashed 30-minute password resets.
+- Added session-version invalidation on password changes, forced password-change support, admin
+  audit records, error boundaries, content-sniffed image-upload throttling and demo-admin controls.
+- Generated and applied the additive `20261118070548_phase6_security_hardening` migration with
+  `prisma migrate dev`. No dependency was added.
+
+### Verification
+
+- The migration applied to the configured local PostgreSQL database. The first Prisma Client
+  generation attempt hit a Windows engine-DLL rename lock; a subsequent `pnpm db:generate` passed.
+- `pnpm lint`, `pnpm typecheck`, `pnpm build`, and `pnpm test` passed (20 files, 83 tests). An
+  earlier default-concurrency run once timed out the existing multi-page PDF test under
+  20-worker contention; subsequent standard runs passed.
+- `pnpm audit` reports two high and one moderate transitive advisories; no safe non-breaking fix was
+  available without changing the pinned Prisma/tooling chain. Local HTTP smoke checks confirmed
+  report-only and enforce headers and a 204 CSP report response. Interactive browser and Vercel
+  behavior remain unverified.
+
 ## 2026-11-18 — Coupon validation and review eligibility fixes
 
 ### Fixed
