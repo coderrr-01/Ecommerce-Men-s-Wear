@@ -63,6 +63,7 @@ export interface ProductCardData {
   imageAlt: string;
   inStock: boolean;
   isNew: boolean;
+  rating?: { average: number; count: number };
 }
 
 export interface ProductListResult {
@@ -107,5 +108,6 @@ export interface ProductDetailData {
     comment: string | null;
     author: string;
     createdAt: Date;
+    photos: string[];
   }[];
 }

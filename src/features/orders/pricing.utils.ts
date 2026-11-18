@@ -44,5 +44,5 @@ export function priceOrderCart(
   if (totals.subtotal !== expectedSubtotal) {
     throw new ConflictError("Prices changed. Review your refreshed bag before placing the order.");
   }
-  return { ...totals, items: pricedItems };
+  return { ...totals, discountTotal: 0, items: pricedItems };
 }

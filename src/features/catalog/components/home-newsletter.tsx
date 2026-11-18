@@ -1,9 +1,6 @@
-import { ArrowRight } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ScrollReveal } from "@/components/shared/scroll-reveal";
 import { siteConfig } from "@/config/site.config";
+import { NewsletterSignupForm } from "@/features/communications/components/newsletter-signup-form";
 
 export function HomeNewsletter() {
   const { newsletter } = siteConfig.home;
@@ -21,26 +18,7 @@ export function HomeNewsletter() {
             </h2>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">{newsletter.description}</p>
           </div>
-          <form className="w-full max-w-md" aria-describedby="newsletter-status">
-            <label htmlFor="newsletter-email" className="sr-only">
-              Email address
-            </label>
-            <div className="flex gap-2">
-              <Input
-                id="newsletter-email"
-                type="email"
-                placeholder="Email address"
-                disabled
-                className="min-h-12"
-              />
-              <Button type="submit" size="icon" aria-label="Join newsletter" disabled>
-                <ArrowRight aria-hidden="true" />
-              </Button>
-            </div>
-            <p id="newsletter-status" role="status" className="mt-2 text-xs text-muted-foreground">
-              {newsletter.disabledLabel}
-            </p>
-          </form>
+          <NewsletterSignupForm />
         </div>
       </section>
     </ScrollReveal>

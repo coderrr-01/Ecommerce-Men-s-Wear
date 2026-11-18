@@ -9,6 +9,7 @@ export interface CheckoutInput {
   idempotencyKey: string;
   honeypot: string;
   expectedSubtotal: number;
+  couponCode?: string;
 }
 
 export interface CheckoutAddress {
@@ -92,8 +93,8 @@ export interface StoredOrderMessage {
   customerPhone: string | null;
   shippingAddress: unknown;
   customerNote: string | null;
-  subtotal: number;
   discountTotal?: number;
+  subtotal: number;
   shippingTotal: number;
   taxTotal?: number;
   grandTotal: number;
@@ -141,6 +142,7 @@ export interface PricedOrder {
   subtotal: number;
   shippingTotal: number;
   grandTotal: number;
+  discountTotal: number;
   items: {
     productId: string;
     productSlug: string;

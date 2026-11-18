@@ -24,16 +24,19 @@
   suggestion. It is not a garment-measurement chart; numeric/free-size styles require support
   guidance.
 - Guest wishlist and recently viewed entries use versioned localStorage records containing only
-  serializable product-card data. They are browser/device-specific and do not sync with accounts.
+  serializable product-card data. On login, wishlist IDs merge into the authenticated database
+  wishlist; recently viewed history remains device-specific.
 
 ## Cart and unavailable services
 
 - The cart drawer displays the signed-in server cart, line items and progress toward the configured
   free-shipping threshold. Adding an item opens the drawer after the existing action succeeds and
   refreshes the server-rendered cart summary.
-- Quantity changes and removals continue through existing cart actions on `/cart`. Checkout remains
-  disabled until order, inventory and payment workflows are implemented.
-- Newsletter signup is explicitly disabled and marked as coming soon; no fake subscription is sent.
+- Quantity changes and removals continue through existing cart actions on `/cart`. WhatsApp
+  checkout recomputes coupon discounts from the database inside order creation; no online payment is
+  collected.
+- Newsletter signup and `/contact` now store submissions through validated, rate-limited actions.
+  Contact success confirms storage only and does not claim an email was sent.
 - The PWA manifest and generated theme-colored icon enable installation metadata only. No offline
   caching or service worker is included.
 

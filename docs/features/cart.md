@@ -48,5 +48,6 @@ admin confirmation performs the conditional stock decrement.
 ## Known gaps
 
 - Guest cart merge after login.
-- Tax, coupons and shipping-method selection.
+- Tax and shipping-method selection. Coupon previews are advisory; order creation recalculates
+  eligibility, usage limits and paise discounts from PostgreSQL inside the order transaction.
 - Saved-for-later and stock reservation.

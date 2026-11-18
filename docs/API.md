@@ -133,6 +133,10 @@ validates every cart variant and recomputes paise totals from database prices. A
 creates the pending `WHATSAPP` order and item snapshots, then clears the cart. Stock is not changed
 until an admin confirms the order.
 
+An optional `couponCode` is trimmed and normalized. Coupon checks are rate limited and return a
+generic invalid-code response; final coupon eligibility, per-customer/global usage and the discount
+are rechecked against the database in the serializable order-creation transaction.
+
 The page route `/order/{orderNumber}?token={token}` renders the order confirmation only when both the
 human-readable order number and high-entropy token match. There is no lookup by order number alone.
 Guest pages include status history and configured tracking details, but never internal admin notes.
@@ -164,12 +168,33 @@ a shared database/cache store.
 Invoice numbers use the configured annual prefix and a database counter updated in the invoice
 transaction. The response is a private, no-store PDF generated with PDFKit on the Node.js runtime.
 
+### Phase 5 Part B: wishlist, coupons, returns, reviews and communications
+
+| Action/route                                                             | Access                      | Behavior                                                                                                                                      |
+| ------------------------------------------------------------------------ | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mergeWishlistAction(productIds)`                                        | Signed-in customer          | Merges up to 100 active product IDs into the owner's wishlist; database uniqueness removes duplicates.                                        |
+| `toggleWishlistAction(productId)` / `clearWishlistAction()`              | Signed-in customer          | Mutates only the current customer's wishlist. Guests continue using the same localStorage adapter/UI.                                         |
+| `checkCouponAction({ code, phone? })`                                    | Guest or customer           | Rate-limited preview; invalid, expired, inactive, exhausted and ineligible codes share one response.                                          |
+| `saveCouponAction(input)` / `archiveCouponAction(id)`                    | STAFF/ADMIN                 | Create/update or soft-archive percent/fixed-paise coupons and their date/usage limits.                                                        |
+| `requestReturnAction(FormData)`                                          | Owning customer             | Requires a delivered order item within `siteConfig.shipping.returnsWindowDays`; accepts optional up to three JPEG/PNG/WebP photos, 5 MB each. |
+| `updateReturnRequestAction({ id, action })`                              | STAFF/ADMIN                 | Approve/reject, receive, then close as return/exchange. Stock is restored with a `StockMovement` only on receive.                             |
+| `submitReviewAction(FormData)`                                           | Signed-in eligible customer | Requires a delivered order containing the product; one review per user/product, pending moderation, up to three validated photos.             |
+| `moderateReviewAction({ id, status })`                                   | STAFF/ADMIN                 | Approve or hide a review. Only approved reviews contribute to catalog aggregates and JSON-LD.                                                 |
+| `newsletterSignupAction({ email, honeypot })`                            | Public                      | Validates and rate limits; normalized duplicate emails return the same success response.                                                      |
+| `contactFormAction({ name, email, phone?, subject, message, honeypot })` | Public                      | Validates, rate limits and stores plain text; no email-sent claim is shown.                                                                   |
+| `GET /api/admin/messages/export?kind=newsletter\|contacts`               | STAFF/ADMIN                 | Downloads injection-safe CSV exports.                                                                                                         |
+
+`/admin/coupons`, `/admin/returns`, `/admin/reviews` and `/admin/messages` are protected by both the
+admin layout and role checks in every mutation/export boundary. Customer return reads are scoped to
+the current account; review text is sanitized and rendered as text, never raw HTML.
+
 ## Not implemented
 
 - Online payment capture and payment webhooks.
 - Razorpay webhook handler and signature verification route.
 - Public JSON catalogue API (storefront pages query services directly).
-- Address CRUD, wishlist, review, coupon, customer management and settings actions.
+- Address CRUD, newsletter delivery campaigns, contact-message email notifications, customer
+  management and settings actions.
 - Password reset API.
 
 When adding a route, keep the envelope, validate at the boundary, use service functions and never import Prisma from the route.

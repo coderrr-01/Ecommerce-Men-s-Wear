@@ -2,6 +2,48 @@
 
 All notable changes to Diamond Selection are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow SemVer.
 
+## 2026-11-18 — Coupon validation and review eligibility fixes
+
+### Fixed
+
+- Coupon previews now explain specific safe eligibility failures, normalize codes on both save and
+  lookup, compare UTC instants, and log only non-PII reason codes. Admin discount inputs now clearly
+  show percentage versus paise units.
+- Product pages now show the signed-in customer's review submission status and explain that guest
+  orders cannot currently be claimed. Eligibility requires the customer's own DELIVERED order,
+  delivery timestamp and matching product item.
+
+### Verification
+
+- A UTC 10% coupon created through the save service applied to a populated PostgreSQL cart after
+  entering its code in lowercase with surrounding spaces: subtotal 219700 paise, discount 21970,
+  total 197730 paise. The temporary coupon was removed after the check.
+- PostgreSQL had two signed-in delivered orders with product items; review state for one qualifying
+  order resolved to eligible. The product and checkout routes were checked over local HTTP; no
+  authenticated review submission was performed. A temporary review was listed and approved via
+  the moderation service, its approved aggregate was checked, and the fixture was deleted.
+- `pnpm lint`, `pnpm typecheck`, `pnpm test` (19 files, 79 tests), `pnpm build`, and
+  `pnpm prisma migrate status` pass.
+
+## 2026-11-17 — Phase 5 Part B
+
+### Added
+
+- Added account-backed wishlist persistence with guest localStorage merge, admin coupon management,
+  server-repriced coupon discounts and transactional usage limits.
+- Added delivered-order return/exchange requests with provider-backed photos and stock restoration
+  only when received; added purchase-verified reviews with moderation and approved-only aggregates.
+- Added persistent newsletter/contact forms, honeypots, rate limits and admin CSV exports.
+- Generated and applied the additive `20261117122300_phase5_part_b` migration with Prisma; no new
+  dependencies were added.
+
+### Verification
+
+- `pnpm lint`, `pnpm typecheck`, `pnpm test` (19 files, 77 tests) and `pnpm build` pass.
+- PostgreSQL reports all five local migrations applied and the schema up to date. Feature
+  workflows against live data, browser flows and external storage uploads were not verified.
+- No commit was made.
+
 ## 2026-11-17 — Phase 5 Part A order experience
 
 ### Added
@@ -20,9 +62,8 @@ All notable changes to Diamond Selection are documented here. Format follows [Ke
 - A local 35-item PDF was generated and read back from a temporary file; it contains multiple pages,
   Unicode font maps, rupee amounts, amount-in-words and Hindi/Gujarati font runs. Build tracing
   includes the font files.
-- PostgreSQL is reachable with three existing migrations applied. The new Phase 5 migration could
-  not be generated in this non-interactive command environment; browser/database order workflows
-  and Vercel runtime remain unverified.
+- PostgreSQL was reachable; the Phase 5 Part A migration was later generated and applied. Browser
+  order workflows and Vercel runtime remain unverified.
 
 ## 2026-11-17 — WhatsApp checkout and orders
 

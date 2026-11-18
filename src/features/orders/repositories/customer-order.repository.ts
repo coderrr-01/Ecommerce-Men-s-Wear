@@ -20,6 +20,7 @@ export async function findCustomerOrders(userId: string, page: number) {
         status: true,
         grandTotal: true,
         placedAt: true,
+        deliveredAt: true,
         _count: { select: { items: true } },
       },
     }),
@@ -34,6 +35,7 @@ export async function findCustomerOrder(orderNumber: string, userId: string) {
       orderNumber: true,
       status: true,
       placedAt: true,
+      deliveredAt: true,
       customerName: true,
       customerPhone: true,
       shippingAddress: true,
@@ -52,6 +54,10 @@ export async function findCustomerOrder(orderNumber: string, userId: string) {
         select: { fromStatus: true, toStatus: true, note: true, createdAt: true },
       },
       items: { orderBy: { id: "asc" } },
+      returnRequests: {
+        orderBy: { createdAt: "desc" },
+        select: { orderItemId: true, status: true, reason: true, createdAt: true },
+      },
     },
   });
 }

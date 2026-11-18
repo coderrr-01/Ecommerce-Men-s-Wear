@@ -94,6 +94,17 @@ export function ProductCard({ product, priority = false, className }: ProductCar
         <h3 className="text-sm leading-5 font-medium transition-colors group-hover:text-accent">
           {product.name}
         </h3>
+        {product.rating?.count ? (
+          <p
+            className="text-xs text-muted-foreground"
+            aria-label={`${product.rating.average} out of 5 stars from ${product.rating.count} reviews`}
+          >
+            <span aria-hidden="true" className="text-accent">
+              ★
+            </span>{" "}
+            {product.rating.average.toFixed(1)} ({product.rating.count})
+          </p>
+        ) : null}
         <div className="flex flex-wrap items-baseline gap-2">
           <span className="text-sm font-semibold">{formatPrice(product.price)}</span>
           {product.compareAtPrice ? (

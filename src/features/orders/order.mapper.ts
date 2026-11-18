@@ -30,6 +30,7 @@ export function toOrderMessageData(order: StoredOrderMessage): OrderMessageData 
     customerPhone: order.customerPhone ?? shippingAddress.phone,
     shippingAddress,
     customerNote: order.customerNote,
+    discountTotal: order.discountTotal ?? 0,
     items: order.items.map((item) => ({
       name: item.name,
       productSlug: item.productSlug ?? "shop",

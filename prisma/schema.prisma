@@ -32,7 +32,9 @@ enum OrderStatus {
   DELIVERED
   CANCELLED
   RETURN_REQUESTED
+  RETURN_APPROVED
   RETURNED
+  EXCHANGED
 }
 
 enum PaymentStatus {
@@ -85,14 +87,18 @@ model User {
   updatedAt     DateTime  @updatedAt
   deletedAt     DateTime?
 
-  addresses      Address[]
-  carts          Cart[]
-  orders         Order[]
-  reviews        Review[]
-  wishlist       Wishlist[]
-  stockMovements StockMovement[]
-  statusChanges  OrderStatusHistory[] @relation("OrderStatusChangedBy")
-  orderNotes     OrderInternalNote[]  @relation("OrderInternalNoteAuthor")
+  addresses              Address[]
+  carts                  Cart[]
+  orders                 Order[]
+  reviews                Review[]
+  wishlist               Wishlist[]
+  newsletterSubscription NewsletterSubscription?
+  contactMessages        ContactMessage[]
+  stockMovements         StockMovement[]
+  statusChanges          OrderStatusHistory[]    @relation("OrderStatusChangedBy")
+  orderNotes             OrderInternalNote[]     @relation("OrderInternalNoteAuthor")
+  returnRequests         ReturnRequest[]         @relation("ReturnRequestUser")
+  reviewedReturnRequests ReturnRequest[]         @relation("ReturnRequestReviewer")
 
   @@index([role])
   @@index([deletedAt])
@@ -313,12 +319,14 @@ model Order {
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
 
-  user          User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
-  coupon        Coupon?              @relation(fields: [couponId], references: [id], onDelete: SetNull)
-  items         OrderItem[]
-  payments      Payment[]
-  statusHistory OrderStatusHistory[]
-  internalNotes OrderInternalNote[]
+  user             User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
+  coupon           Coupon?              @relation(fields: [couponId], references: [id], onDelete: SetNull)
+  items            OrderItem[]
+  payments         Payment[]
+  statusHistory    OrderStatusHistory[]
+  internalNotes    OrderInternalNote[]
+  couponRedemption CouponRedemption?
+  returnRequests   ReturnRequest[]
 
   @@index([userId, createdAt])
   @@index([customerPhone, createdAt])
@@ -382,9 +390,10 @@ model OrderItem {
   total       Int
   imageUrl    String?
 
-  order   Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product Product?        @relation(fields: [productId], references: [id], onDelete: SetNull)
-  variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  order          Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product        Product?        @relation(fields: [productId], references: [id], onDelete: SetNull)
+  variant        ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  returnRequests ReturnRequest[]
 
   @@index([orderId])
   @@index([productId])
@@ -431,11 +440,26 @@ model Coupon {
   updatedAt     DateTime   @updatedAt
   deletedAt     DateTime?
 
-  orders Order[]
+  orders      Order[]
+  redemptions CouponRedemption[]
 
   @@index([isActive, deletedAt])
   @@index([expiresAt])
   @@map("coupons")
+}
+
+model CouponRedemption {
+  id          String   @id @default(cuid())
+  couponId    String
+  orderId     String   @unique
+  customerKey String
+  createdAt   DateTime @default(now())
+
+  coupon Coupon @relation(fields: [couponId], references: [id], onDelete: Restrict)
+  order  Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([couponId, customerKey, createdAt])
+  @@map("coupon_redemptions")
 }
 
 model Wishlist {
@@ -465,12 +489,103 @@ model Review {
   updatedAt          DateTime     @updatedAt
   deletedAt          DateTime?
 
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  photos  ReviewPhoto[]
 
   @@unique([productId, userId])
   @@index([productId, status])
   @@map("reviews")
+}
+
+model ReviewPhoto {
+  id        String   @id @default(cuid())
+  reviewId  String
+  url       String
+  publicId  String
+  createdAt DateTime @default(now())
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@index([reviewId, createdAt])
+  @@map("review_photos")
+}
+
+enum ReturnRequestStatus {
+  REQUESTED
+  APPROVED
+  REJECTED
+  RECEIVED
+  RETURNED
+  EXCHANGED
+}
+
+model ReturnRequest {
+  id           String              @id @default(cuid())
+  orderId      String
+  orderItemId  String
+  userId       String
+  status       ReturnRequestStatus @default(REQUESTED)
+  reason       String              @db.VarChar(1000)
+  adminNote    String?             @db.VarChar(1000)
+  activeKey    String?             @unique
+  reviewedById String?
+  receivedAt   DateTime?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  order      Order                @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderItem  OrderItem            @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  user       User                 @relation("ReturnRequestUser", fields: [userId], references: [id], onDelete: Cascade)
+  reviewedBy User?                @relation("ReturnRequestReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  photos     ReturnRequestPhoto[]
+
+  @@index([orderId, createdAt])
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+  @@map("return_requests")
+}
+
+model ReturnRequestPhoto {
+  id              String   @id @default(cuid())
+  returnRequestId String
+  url             String
+  publicId        String
+  createdAt       DateTime @default(now())
+
+  returnRequest ReturnRequest @relation(fields: [returnRequestId], references: [id], onDelete: Cascade)
+
+  @@index([returnRequestId, createdAt])
+  @@map("return_request_photos")
+}
+
+model NewsletterSubscription {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  userId    String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@map("newsletter_subscriptions")
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  userId    String?
+  name      String   @db.VarChar(120)
+  email     String   @db.VarChar(254)
+  phone     String?  @db.VarChar(20)
+  subject   String   @db.VarChar(160)
+  message   String   @db.VarChar(5000)
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@map("contact_messages")
 }
 
 model Banner {

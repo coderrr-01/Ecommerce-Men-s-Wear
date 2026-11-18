@@ -16,15 +16,24 @@
 
 ## Wishlist
 
-- `Wishlist` enforces one row per user/product.
-- No toggle action, persistence or page implementation yet.
-- Product cards do not show a wishlist control.
+- `Wishlist` enforces one row per user/product; server actions and repositories scope every query to
+  the signed-in user.
+- The existing product-card controls use the same context for guests and signed-in customers.
+  Guest localStorage IDs are merged idempotently after login and cleared only after success.
+- `/wishlist` and `/account/wishlist` show the saved products.
 
 ## Reviews
 
-- `Review` has rating, title, comment, moderation status and verified-purchase flag.
-- Default status is `PENDING`; storefront rating aggregates only count approved reviews (service-level).
-- No submission form, moderation queue or verified-purchase calculation yet.
+- Reviews require a delivered order item for the product and are unique per customer/product.
+- New reviews are pending until staff approval; plain text is sanitized, optional images use the
+  configured storage provider, and only approved reviews affect product ratings/JSON-LD.
+
+## Returns
+
+- Customers may request a return/exchange on an owned delivered order item within the configured
+  window. Each item can have one active request at a time.
+- Staff approve/reject, record item receipt, then complete a return or exchange. Stock restoration
+  and audit movement happen only when receipt is recorded, transactionally.
 
 ## Password reset
 

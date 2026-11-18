@@ -1,5 +1,29 @@
 # Documentation changelog
 
+## 2026-11-18 — Coupon validation and review eligibility fixes
+
+- Coupon application now returns rule-specific safe reasons, logs reason codes without customer
+  data, keeps money input units explicit and converts admin date-time values to UTC instants.
+- Product detail shows explicit eligibility/login states and the existing review status; guest
+  orders are clearly documented as not claimable for reviews at this time.
+- A temporary valid coupon was saved and applied to a populated local PostgreSQL cart using
+  lowercase/space-padded input, then removed. Review eligibility resolved against a qualifying
+  delivered database order.
+- Local HTTP checks confirmed the product Reviews/login state and checkout coupon controls; admin
+  review page redirects unauthenticated access. A temporary review was listed and approved through
+  the moderation service, its aggregate updated, and the fixture was deleted. All quality gates
+  pass, including 19 test files and 79 tests.
+
+## 2026-11-17 — Phase 5 Part B
+
+- Added account-backed wishlist sync and guest-list merge, transactional coupon discounts,
+  order-item return/exchange requests, verified moderated reviews and newsletter/contact persistence.
+- Added admin pages/CSV exports for coupons, returns, reviews and messages, plus focused rule tests.
+- Generated and applied the additive `20261117122300_phase5_part_b` migration with Prisma.
+- `pnpm lint`, `pnpm typecheck`, `pnpm test` (19 files, 77 tests) and `pnpm build` pass.
+- PostgreSQL reports all five migrations applied and the schema up to date. Feature workflows,
+  browser flows and external image uploads remain unverified.
+
 ## 2026-11-17 — Phase 5 Part A order experience
 
 - Added customer-owned order listing/detail pages and status timelines on account and guest routes.
@@ -9,8 +33,8 @@
   PDFKit and bundled OFL Noto fonts.
 - Lint, typecheck, 18 unit-test files and production build pass. A local 35-item multi-page PDF
   verified rupee text, Hindi/Gujarati font runs and amount-in-words; Next tracing includes its
-  bundled fonts. PostgreSQL is reachable, but the additive Phase 5 migration and browser/database
-  order workflows remain unverified until run interactively.
+  bundled fonts. The Part A migration was later generated and applied locally; browser order
+  workflows remain unverified.
 
 ## 2026-11-17 — WhatsApp checkout and orders
 

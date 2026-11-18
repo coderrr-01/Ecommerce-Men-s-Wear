@@ -11,6 +11,8 @@ import {
 } from "@/features/orders/schemas/order.schema";
 import { isInvoiceAvailable } from "@/features/orders/order-access.utils";
 import { NotFoundError } from "@/lib/errors";
+import { siteConfig } from "@/config/site.config";
+import { isWithinReturnWindow } from "@/features/returns/return.utils";
 
 export async function getCustomerOrders(userId: string, pageInput: unknown) {
   const { page: requestedPage } = customerOrdersQuerySchema.parse({ page: pageInput });
@@ -30,6 +32,11 @@ export async function getCustomerOrder(orderNumber: string, userId: string) {
     orderNumber: order.orderNumber,
     status: order.status,
     placedAt: order.placedAt,
+    deliveredAt: order.deliveredAt,
+    returnEligible:
+      ["DELIVERED", "RETURN_REQUESTED", "RETURN_APPROVED"].includes(order.status) &&
+      isWithinReturnWindow(order.deliveredAt, new Date(), siteConfig.shipping.returnsWindowDays),
+    returnRequests: order.returnRequests,
     customerName: order.customerName ?? "",
     customerPhone: order.customerPhone ?? "",
     shippingAddress: readShippingAddress(order.shippingAddress),

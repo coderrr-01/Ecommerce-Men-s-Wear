@@ -32,6 +32,25 @@ export const productCardSelect = {
   },
 } satisfies Prisma.ProductSelect;
 
+export async function findProductReviewAggregates(productIds: string[]) {
+  if (!productIds.length) return new Map<string, { average: number; count: number }>();
+  const rows = await prisma.review.groupBy({
+    by: ["productId"],
+    where: { productId: { in: productIds }, status: "APPROVED", deletedAt: null },
+    _avg: { rating: true },
+    _count: { _all: true },
+  });
+  return new Map(
+    rows.map((row) => [
+      row.productId,
+      {
+        average: Math.round((row._avg.rating ?? 0) * 10) / 10,
+        count: row._count._all,
+      },
+    ]),
+  );
+}
+
 function orderByFor(sort: CatalogQuery["sort"]): Prisma.ProductOrderByWithRelationInput {
   switch (sort) {
     case "price-asc":
@@ -180,6 +199,7 @@ export async function findProductBySlug(slug: string) {
           comment: true,
           createdAt: true,
           user: { select: { name: true } },
+          photos: { take: 3, select: { url: true } },
         },
       },
     },

@@ -3,6 +3,7 @@ import "server-only";
 import { DEFAULT_PAGE_SIZE, PRODUCT_PLACEHOLDER_IMAGE } from "@/config/constants";
 import {
   findCategoryOptions,
+  findProductReviewAggregates,
   findFeaturedProducts,
   findProductBySlug,
   findProductList,
@@ -20,7 +21,7 @@ const NEW_PRODUCT_DAYS = 30;
 
 type ProductCardRow = Awaited<ReturnType<typeof findProductList>>["rows"][number];
 
-function toProductCard(row: ProductCardRow): ProductCardData {
+export function toProductCard(row: ProductCardRow): ProductCardData {
   const prices = row.variants.map((variant) => variant.price);
   const price = prices.length > 0 ? Math.min(...prices) : row.basePrice;
   const compareCandidates = row.variants
@@ -48,9 +49,10 @@ function toProductCard(row: ProductCardRow): ProductCardData {
 
 export async function getProductList(query: CatalogQuery): Promise<ProductListResult> {
   const { rows, total } = await findProductList(query);
+  const ratings = await findProductReviewAggregates(rows.map((row) => row.id));
 
   return {
-    products: rows.map(toProductCard),
+    products: rows.map((row) => ({ ...toProductCard(row), rating: ratings.get(row.id) })),
     total,
     page: query.page,
     pageSize: DEFAULT_PAGE_SIZE,
@@ -60,12 +62,14 @@ export async function getProductList(query: CatalogQuery): Promise<ProductListRe
 
 export async function getFeaturedProducts(limit = 4) {
   const rows = await findFeaturedProducts(limit);
-  return rows.map(toProductCard);
+  const ratings = await findProductReviewAggregates(rows.map((row) => row.id));
+  return rows.map((row) => ({ ...toProductCard(row), rating: ratings.get(row.id) }));
 }
 
 export async function getRelatedProducts(categoryId: string, excludeSlug: string, limit = 4) {
   const rows = await findRelatedProducts(categoryId, excludeSlug, limit);
-  return rows.map(toProductCard);
+  const ratings = await findProductReviewAggregates(rows.map((row) => row.id));
+  return rows.map((row) => ({ ...toProductCard(row), rating: ratings.get(row.id) }));
 }
 
 export async function getCategoryOptions() {
@@ -74,7 +78,10 @@ export async function getCategoryOptions() {
 
 type ProductDetailRow = NonNullable<Awaited<ReturnType<typeof findProductBySlug>>>;
 
-function toProductDetail(row: ProductDetailRow): ProductDetailData {
+function toProductDetail(
+  row: ProductDetailRow,
+  rating: { average: number; count: number },
+): ProductDetailData {
   const variants = row.variants.map((variant) => ({
     id: variant.id,
     sku: variant.sku,
@@ -85,8 +92,6 @@ function toProductDetail(row: ProductDetailRow): ProductDetailData {
     compareAtPrice: variant.compareAtPrice,
     stock: variant.stock,
   }));
-  const ratingTotal = row.reviews.reduce((sum, review) => sum + review.rating, 0);
-
   return {
     id: row.id,
     name: row.name,
@@ -106,11 +111,7 @@ function toProductDetail(row: ProductDetailRow): ProductDetailData {
       alt: image.altText ?? row.name,
     })),
     variants,
-    rating: {
-      average:
-        row.reviews.length > 0 ? Math.round((ratingTotal / row.reviews.length) * 10) / 10 : 0,
-      count: row.reviews.length,
-    },
+    rating,
     reviews: row.reviews.map((review) => ({
       id: review.id,
       rating: review.rating,
@@ -118,11 +119,14 @@ function toProductDetail(row: ProductDetailRow): ProductDetailData {
       comment: review.comment,
       author: review.user.name ?? "Verified customer",
       createdAt: review.createdAt,
+      photos: review.photos.map((photo) => photo.url),
     })),
   };
 }
 
 export async function getProductDetail(slug: string) {
   const row = await findProductBySlug(slug);
-  return row ? toProductDetail(row) : null;
+  if (!row) return null;
+  const ratings = await findProductReviewAggregates([row.id]);
+  return toProductDetail(row, ratings.get(row.id) ?? { average: 0, count: 0 });
 }

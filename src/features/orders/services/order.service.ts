@@ -26,6 +26,7 @@ import { Prisma } from "@prisma/client";
 import { priceOrderCart } from "@/features/orders/pricing.utils";
 import { generateOrderNumber } from "@/lib/utils";
 import { isInvoiceAvailable } from "@/features/orders/order-access.utils";
+import { couponCustomerKey } from "@/features/coupons/coupon.utils";
 
 const ORDER_NUMBER_ATTEMPTS = 4;
 
@@ -120,6 +121,8 @@ export async function createCustomerOrder(
     customerPhone: input.phone,
     shippingAddress: address,
     customerNote: input.note || null,
+    couponCode: input.couponCode?.trim().toUpperCase() || null,
+    couponCustomerKey: input.couponCode ? couponCustomerKey(userId, input.phone) : null,
   };
 
   for (let attempt = 0; attempt < ORDER_NUMBER_ATTEMPTS; attempt += 1) {

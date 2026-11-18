@@ -39,6 +39,18 @@ before shipment and restores stock only if the order had committed stock.
 - Every mutation rechecks STAFF/ADMIN authorization. Status changes validate the transition in the
   service and commit history and inventory effects transactionally.
 
+## Coupons and returns
+
+Checkout accepts an optional coupon code. The preview action is rate limited; order creation
+revalidates active dates, minimum amount and both usage limits against PostgreSQL within the
+serializable order/cart transaction. It calculates the discount from current database prices,
+persists the redemption and paise discount, and includes it in order detail, WhatsApp and invoice
+totals.
+
+Delivered customers can request a return/exchange on each order item within
+`siteConfig.shipping.returnsWindowDays` from `deliveredAt`. See [returns.md](./returns.md) for
+approval and receipt behavior. Stock returns only when an admin records item receipt.
+
 ## Invoice access and numbering
 
 Invoices are available after confirmation (including later fulfilment states). A cancelled order

@@ -22,6 +22,7 @@ export const checkoutSchema = z.object({
   idempotencyKey: z.string().uuid(),
   honeypot: z.string().max(0),
   expectedSubtotal: z.number().int().nonnegative(),
+  couponCode: z.string().trim().max(40).optional(),
 });
 
 export type CheckoutFormInput = z.input<typeof checkoutSchema>;

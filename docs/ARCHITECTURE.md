@@ -91,11 +91,14 @@ Business logic must depend on the interfaces, not provider SDKs. Razorpay is imp
 ## Known gaps
 
 - Online payment capture/webhooks, refunds, tax/coupons and stock reservation are not implemented.
-  The current WhatsApp flow records order requests and does not collect money.
+- Online payment capture/webhooks, refunds and stock reservation are not implemented. The current
+  WhatsApp flow records order requests and does not collect money. Coupons now apply server-side
+  with transactional usage limits.
 - PDF invoice generation is server-side through PDFKit on Node.js and requires deployment tracing
   for its bundled OFL fonts.
 - Category/product/variant CRUD, product images, inventory adjustments, order management, dashboard
-  metrics and account order history are implemented in feature layers; customer management,
-  settings, wishlist, reviews, address management and password reset remain incomplete.
+  metrics, account orders, synced wishlist, coupons, returns, reviews and communications are
+  implemented in feature layers; customer management, settings, address management and password
+  reset remain incomplete.
 
 See `PROGRESS.md` for the next milestones.

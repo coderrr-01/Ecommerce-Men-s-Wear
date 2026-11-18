@@ -1,13 +1,60 @@
 # Implementation progress
 
-Last updated: 2026-11-17
+Last updated: 2026-11-18
 
 ## Status
 
-Phase 2 Admin Catalog Management and the Diamond Selection storefront refresh are implemented.
-WhatsApp order requests, guest cart sessions and admin fulfilment UI are implemented in code;
-the WhatsApp checkout migration has since been applied locally. Phase 5 Part A adds customer order
-history, tracking, status history and invoices; see its verification status below.
+Phase 2 Admin Catalog Management, the Diamond Selection storefront refresh, WhatsApp checkout,
+Phase 5 Part A, and Phase 5 Part B are implemented in code. The Part A and Part B migrations have
+been generated with Prisma and applied to the configured local PostgreSQL database.
+
+## Phase 5 Part B (2026-11-17)
+
+- Added signed-in wishlist persistence and idempotent guest localStorage merge through the existing
+  wishlist context and UI.
+- Added admin coupon management, rate-limited checkout coupon previews and race-safe server-side
+  coupon usage/discount creation within the order transaction. Saved discounts flow into orders,
+  WhatsApp messages and invoices.
+- Added customer return/exchange requests with the configured delivery-based window and up to three
+  StorageProvider photos. Staff can approve/reject, record item receipt and close as returned or
+  exchanged; stock is restored with a `StockMovement` only on receipt.
+- Added delivered-purchase-only, one-per-customer/product reviews with moderation and optional
+  StorageProvider photos. Product ratings and Product JSON-LD aggregates use approved reviews only.
+- Added newsletter/contact storage with validation, honeypots and process-local IP rate limits.
+  Admin can list/export; contact success explicitly confirms storage, not email delivery.
+- Added the generated additive migration `20261117122300_phase5_part_b`. PostgreSQL is reachable
+  and Prisma applied the migration locally. Browser flows and external storage uploads were not
+  exercised in this task.
+- Focused rules tests cover coupon eligibility/discounts, return windows and review eligibility/
+  sanitization.
+- Final verification: `pnpm lint`, `pnpm typecheck`, `pnpm test` (19 files, 77 tests) and
+  `pnpm build` pass. `pnpm prisma migrate status` reports the local PostgreSQL schema up to date
+  with all five migrations applied. Only migration status was checked against PostgreSQL; feature
+  workflows and browser flows remain unverified.
+
+## Coupon and review fixes (2026-11-18)
+
+- Coupon failures now distinguish unknown codes (generic) from actionable rule failures and log
+  only reason codes. Admin values are explicitly labeled percent/paise and date-time fields are
+  converted to UTC instants.
+- Product detail shows login, eligibility, pending, published and rejected review states.
+  Eligibility is scoped to the signed-in user's delivered order and matching item; guest orders
+  cannot currently be claimed and that restriction is explained in the UI.
+- Real PostgreSQL coupon test: saved a valid UTC 10% coupon (starts yesterday, expires next year,
+  zero minimum, no limits) and applied lowercased, space-padded input to a populated signed-in
+  cart. Subtotal 219700 paise, discount 21970, total 197730 paise. The temporary row was removed.
+- Real PostgreSQL review check: two signed-in delivered orders with product items were found, and
+  the eligibility service returned `ELIGIBLE` for a qualifying order.
+- Authenticated browser review submission and moderation action were not exercised. Final
+  verification results are recorded below.
+- Running-app HTTP checks: product detail returned 200 with the Reviews section/login state;
+  checkout returned 200 with a temporary cart and rendered coupon/apply controls, then the cart was
+  removed. The admin review route redirected unauthenticated access. A temporary review was listed,
+  approved through the moderation service, verified in the approved aggregate, and deleted. The
+  authenticated browser action was not exercised.
+- Final gates pass: `pnpm lint`, `pnpm typecheck`, `pnpm test` (19 files, 79 tests) and
+  `pnpm build`. `pnpm prisma migrate status` reports five applied migrations and an up-to-date
+  local PostgreSQL schema.
 
 ## Phase 5 Part A order experience (2026-11-17)
 
@@ -26,13 +73,8 @@ history, tracking, status history and invoices; see its verification status belo
 - `pnpm lint`, `pnpm typecheck`, `pnpm test` (18 files, 72 tests) and `pnpm build` pass. The PDF
   test generated/read a local 35-item multi-page document and checked amount, rupee and Indian
   script output paths. The production trace includes all font/license assets.
-- PostgreSQL is reachable with three prior migrations applied. No Phase 5 migration was generated
-  in this non-interactive environment, so order pages/actions/invoice downloads have not been
-  exercised against PostgreSQL or in the browser. Vercel runtime also remains unverified.
-- Migration blocker: `pnpm prisma migrate dev --name phase5_order_experience` connected to the
-  development PostgreSQL database but was refused because this execution environment is
-  non-interactive. It generated no migration. Run it in an interactive development terminal; do not
-  hand-write migration SQL or use `db push`.
+- PostgreSQL is reachable and the Phase 5 Part A migration is now applied locally. Order-page/
+  invoice workflows have not been browser-tested in this task; Vercel runtime remains unverified.
 
 ## WhatsApp checkout and orders (2026-11-17)
 
@@ -56,9 +98,7 @@ history, tracking, status history and invoices; see its verification status belo
   running browser. No order was placed because the configured WhatsApp number is the all-zero
   placeholder. The owner later generated/applied `20261117063053_whatsapp_checkout` interactively
   and regenerated Prisma Client after stopping the project dev server.
-- Phase 5 Part A's separate migration remains pending. In this execution Prisma reached local
-  PostgreSQL but refused `migrate dev` because the command session is non-interactive; no migration
-  SQL was generated. Run it in an interactive development terminal and review for additive changes.
+- The Phase 5 Part A migration was generated and applied after the initial implementation summary.
 - No order creation, success-link verification, admin confirmation/cancellation, stock movement,
   or production migration was verified against the real database yet.
 
@@ -138,7 +178,8 @@ Previous storefront responsive and interaction checks cover the pre-refresh UI o
 - The denied server-action replay returned a browser redirect response; its typed error body was not
   independently inspected. Each mutation still invokes `requireRole` server-side.
 - Production migration deployment still requires the release procedure and a database backup.
-- Newsletter enrollment is disabled; guest wishlist/recent history are local to the browser. Quick
+- Newsletter and contact submissions are now stored, but email campaigns/contact notifications are
+  not sent. Guest wishlist IDs merge into the account on login; recently viewed stays local. Quick
   view cannot select variants or add directly because listing DTOs lack variant data, price
   filtering is current-page-only, and colour filters are unavailable.
 - Exact garment measurements, online payment, order email and account order history are not

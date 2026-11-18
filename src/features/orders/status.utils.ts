@@ -53,6 +53,36 @@ export function buildOrderTimeline(
     };
   };
 
+  const firstDelivery = known.findIndex((entry) => entry.toStatus === "DELIVERED");
+  if (
+    firstDelivery >= 0 &&
+    known
+      .slice(firstDelivery + 1)
+      .some((entry) =>
+        ["RETURN_REQUESTED", "RETURN_APPROVED", "RETURNED", "EXCHANGED"].includes(entry.toStatus),
+      )
+  ) {
+    const timeline = fulfillmentSteps.map(step);
+    for (const event of known.slice(firstDelivery + 1)) {
+      if (
+        !["DELIVERED", "RETURN_REQUESTED", "RETURN_APPROVED", "RETURNED", "EXCHANGED"].includes(
+          event.toStatus,
+        )
+      ) {
+        continue;
+      }
+      timeline.push({
+        ...step(event.toStatus),
+        createdAt: event.createdAt,
+        note: event.note,
+        current: event.toStatus === status,
+        completed: true,
+      });
+    }
+    if (!known.some((event) => event.toStatus === status)) timeline.push(step(status));
+    return timeline;
+  }
+
   const steps =
     currentIndex < 0 && status !== "CANCELLED"
       ? [status]
@@ -61,12 +91,5 @@ export function buildOrderTimeline(
         : fulfillmentSteps;
   const timeline = (status === "CANCELLED" && steps.length === 0 ? ["PENDING"] : steps).map(step);
   if (status === "CANCELLED") timeline.push(step("CANCELLED"));
-  if (
-    currentIndex < 0 &&
-    status !== "CANCELLED" &&
-    !fulfillmentSteps.includes(status as AdminOrderStatus)
-  ) {
-    timeline.push(step(status));
-  }
   return timeline;
 }

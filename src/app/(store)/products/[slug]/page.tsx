@@ -10,6 +10,8 @@ import { getProductDetail, getRelatedProducts } from "@/features/catalog/service
 import { siteConfig } from "@/config/site.config";
 import { PRODUCT_PLACEHOLDER_IMAGE } from "@/config/constants";
 import { formatPrice } from "@/lib/utils";
+import { getCurrentUser } from "@/features/auth/services/session.service";
+import { getReviewSubmissionState } from "@/features/reviews/services/review.service";
 
 export const dynamic = "force-dynamic";
 
@@ -43,6 +45,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
   if (!product) notFound();
 
   const related = await getRelatedProducts(product.categoryId, product.slug);
+  const user = await getCurrentUser();
+  const reviewState = await getReviewSubmissionState(user?.id ?? null, product.id);
   const prices = product.variants.map((variant) => variant.price);
   const lowestPrice = prices.length > 0 ? Math.min(...prices) : 0;
   const compareAtPrice =
@@ -82,6 +86,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
       offerCount: product.variants.length,
       availability: inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
     },
+    ...(product.rating.count > 0
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: product.rating.average,
+            reviewCount: product.rating.count,
+          },
+        }
+      : {}),
   };
 
   return (
@@ -166,7 +179,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </div>
       </div>
 
-      <ProductStory product={product} related={related} />
+      <ProductStory product={product} related={related} reviewState={reviewState} />
       <RecentlyViewedProducts product={recentProduct} />
     </div>
   );

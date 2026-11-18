@@ -36,6 +36,7 @@ export const mainNav: NavItem[] = [
   { title: "Shorts", href: "/shop?category=shorts" },
   { title: "Sarong (Lungi)", href: "/shop?category=sarong-lungi" },
   { title: "Winter Wear", href: "/shop?category=winter-wear" },
+  { title: "Contact", href: "/contact" },
   { title: "Socks", href: "/shop?category=socks" },
   { title: "Gloves", href: "/shop?category=gloves" },
   { title: "Topis (Caps)", href: "/shop?category=topis-caps" },
@@ -113,5 +114,9 @@ export const adminNav: NavItem[] = [
   { title: "Orders", href: "/admin/orders", icon: "orders" },
   { title: "Inventory", href: "/admin/inventory", icon: "inventory" },
   { title: "Customers", href: "/admin/customers", icon: "customers" },
+  { title: "Coupons", href: "/admin/coupons", icon: "settings" },
+  { title: "Returns", href: "/admin/returns", icon: "orders" },
+  { title: "Reviews", href: "/admin/reviews", icon: "products" },
+  { title: "Messages", href: "/admin/messages", icon: "customers" },
   { title: "Settings", href: "/admin/settings", icon: "settings" },
 ];

@@ -156,6 +156,11 @@ describe("order utilities", () => {
     expect(message).toContain("https://shop.example/products/classic-oxford");
   });
 
+  it("includes the server-calculated coupon discount in the WhatsApp message", () => {
+    const message = buildWhatsAppOrderMessage(order({ discountTotal: 12500 }), site);
+    expect(message).toContain("Discount: -");
+  });
+
   it("rejects an unconfigured all-zero shop WhatsApp number", () => {
     expect(() => buildWhatsAppUrl("order", "+91 00000 00000")).toThrow(
       "The shop WhatsApp number is not configured",
@@ -165,6 +170,7 @@ describe("order utilities", () => {
   it("shortens oversized item lists and links to the full token-protected order", () => {
     const longOrder = order({
       customerNote: "delivery ".repeat(120),
+      discountTotal: 2500,
       items: Array.from({ length: 60 }, (_, index) => ({
         name: `Product ${index} & a detailed garment description`,
         productSlug: `product-${index}`,
@@ -179,6 +185,7 @@ describe("order utilities", () => {
 
     expect(message.length).toBeLessThanOrEqual(1500);
     expect(message).toContain("See full order: https://shop.example/order/");
+    expect(message).toContain("Discount: -");
     expect(message).not.toContain("https://shop.example/products/product-");
   });
 });

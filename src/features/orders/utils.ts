@@ -78,6 +78,7 @@ function renderOrderMessage(
     ...itemLines,
     ...(omitted ? [`… and ${omitted} more item(s).`] : []),
     `Subtotal: ${formatPrice(order.subtotal)}`,
+    (order.discountTotal ?? 0) > 0 ? `Discount: -${formatPrice(order.discountTotal ?? 0)}` : "",
     `Delivery: ${order.shippingTotal === 0 ? "Free" : formatPrice(order.shippingTotal)}`,
     `Total: ${formatPrice(order.grandTotal)}`,
     order.customerNote
@@ -135,12 +136,14 @@ export function buildWhatsAppOrderMessage(
     `Address: ${truncate(order.shippingAddress.city, 24)}, ${truncate(order.shippingAddress.postalCode, 6)}`,
     "Items:",
     `… ${order.items.length} item(s).`,
+    (order.discountTotal ?? 0) > 0 ? `Discount: -${formatPrice(order.discountTotal ?? 0)}` : "",
     `Total: ${formatPrice(order.grandTotal)}`,
     linkLine,
   ];
-  return essentials.join("\n").length <= 1500
-    ? essentials.join("\n")
-    : truncate(essentials.slice(0, -1).join("\n"), 1500 - linkLine.length - 1) + `\n${linkLine}`;
+  const compact = essentials.filter(Boolean);
+  return compact.join("\n").length <= 1500
+    ? compact.join("\n")
+    : truncate(compact.slice(0, -1).join("\n"), 1500 - linkLine.length - 1) + `\n${linkLine}`;
 }
 
 export function buildWhatsAppUrl(message: string, configuredNumber: string): string {

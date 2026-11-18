@@ -59,23 +59,27 @@ Override these with `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `SEED_CUSTOMER_EM
   uploads, audited inventory adjustments/CSV export, and live dashboard metrics.
 - Guest and signed-in WhatsApp order requests with server-repriced order snapshots, token-protected
   confirmation links, and admin fulfilment/stock audit flow. No online payment is collected.
+- Account-synced wishlist with guest merge, transactional coupons, return/exchange approvals,
+  verified moderated reviews, and persisted/rate-limited newsletter and contact submissions.
 - Provider adapters for payment (mock/Razorpay), storage (Cloudinary) and email/SMS (console/Resend).
 - Unit tests for money formatting, redirects, catalogue URLs, cart totals, validation and stock rules.
 - Passed `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm build`.
 
 ## Current limitations
 
-- Online payment capture/webhooks, refunds, tax/coupons, stock reservation and account order history
-  are not implemented. Stock is committed when staff confirms an order request.
-- Newsletter signup is explicitly marked as coming soon. Search suggestions are category/recent-query based; variant-aware product suggestions and colour filtering need richer catalog DTOs.
-- Guest wishlist and recently viewed data are browser/device-specific and do not sync to accounts.
+- Online payment capture/webhooks, refunds and stock reservation are not implemented. Stock is
+  committed when staff confirms an order request.
+- Newsletter/contact submissions are stored, but email campaigns and contact notifications are not
+  sent. Search suggestions are category/recent-query based; variant-aware product suggestions and
+  colour filtering need richer catalog DTOs.
+- Recently viewed data remains browser/device-specific. Guest wishlist entries merge into the
+  account wishlist after login.
 - Password reset email is not enabled.
 - Admin catalog fields and stock-audit tables are tracked in the generated migration
   `20261113114155_admin_catalog_stock_movements`; database verification status is recorded in
   [progress](docs/PROGRESS.md).
-- WhatsApp checkout schema changes are additive but require the owner to generate the dev migration
-  with `pnpm exec prisma migrate dev --name whatsapp_checkout`. Set the shop WhatsApp number and
-  production URL in `src/config/site.config.ts` before enabling order requests.
+- WhatsApp checkout, order-experience and Phase 5 Part B schema changes are additive and recorded in
+  generated Prisma migrations. Production applies them with `pnpm prisma migrate deploy`.
 
 ## Documentation
 

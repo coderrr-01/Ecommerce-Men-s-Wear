@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { placeOrderAction } from "@/features/orders/actions/order.actions";
+import { checkCouponAction } from "@/features/coupons/actions/coupon.actions";
+import { formatPrice } from "@/lib/utils";
 import {
   checkoutSchema,
   type CheckoutFormInput,
@@ -35,6 +37,8 @@ export function CheckoutForm({ defaults, expectedSubtotal, idempotencyKey }: Che
   const [message, setMessage] = useState<string | null>(null);
   const {
     register,
+    setValue,
+    getValues,
     handleSubmit,
     formState: { errors },
   } = useForm<CheckoutFormInput, unknown, CheckoutFormOutput>({
@@ -47,6 +51,22 @@ export function CheckoutForm({ defaults, expectedSubtotal, idempotencyKey }: Che
       expectedSubtotal,
     },
   });
+  const [couponMessage, setCouponMessage] = useState<string | null>(null);
+  const [couponSaving, setCouponSaving] = useState<number | null>(null);
+
+  const applyCoupon = async () => {
+    const code = getValues("couponCode") ?? "";
+    setCouponSaving(0);
+    const result = await checkCouponAction({ code, phone: getValues("phone") });
+    setCouponSaving(null);
+    if (!result.success) {
+      setValue("couponCode", "");
+      setCouponMessage(result.error.message);
+      return;
+    }
+    setValue("couponCode", result.data.code);
+    setCouponMessage(`Coupon applied. You save ${formatPrice(result.data.discount)}.`);
+  };
 
   const onSubmit = handleSubmit((values) => {
     startTransition(async () => {
@@ -72,6 +92,9 @@ export function CheckoutForm({ defaults, expectedSubtotal, idempotencyKey }: Che
       isPending={isPending}
       message={message}
       register={register}
+      couponMessage={couponMessage}
+      couponSaving={couponSaving !== null}
+      onApplyCoupon={() => void applyCoupon()}
       onSubmit={onSubmit}
     />
   );
@@ -82,12 +105,18 @@ function CheckoutFields({
   isPending,
   message,
   register,
+  couponMessage,
+  couponSaving,
+  onApplyCoupon,
   onSubmit,
 }: {
   errors: FieldErrors<CheckoutFormInput>;
   isPending: boolean;
   message: string | null;
   register: UseFormRegister<CheckoutFormInput>;
+  couponMessage: string | null;
+  couponSaving: boolean;
+  onApplyCoupon: () => void;
   onSubmit: () => void;
 }) {
   return (
@@ -99,6 +128,20 @@ function CheckoutFields({
         <input id="checkout-website" tabIndex={-1} autoComplete="off" {...register("honeypot")} />
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-1.5 sm:col-span-2">
+          <Label htmlFor="checkout-coupon">Coupon code (optional)</Label>
+          <div className="flex gap-2">
+            <Input id="checkout-coupon" autoComplete="off" {...register("couponCode")} />
+            <Button type="button" variant="outline" disabled={couponSaving} onClick={onApplyCoupon}>
+              {couponSaving ? "Checking..." : "Apply"}
+            </Button>
+          </div>
+          {couponMessage ? (
+            <p role="status" className="text-xs text-muted-foreground">
+              {couponMessage}
+            </p>
+          ) : null}
+        </div>
         <div className="space-y-1.5 sm:col-span-2">
           <Label htmlFor="checkout-name">Full name</Label>
           <Input id="checkout-name" autoComplete="name" {...register("fullName")} />

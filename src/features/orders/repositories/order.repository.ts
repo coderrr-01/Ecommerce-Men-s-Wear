@@ -7,6 +7,12 @@ import type { CheckoutAddress } from "@/features/orders/types";
 import type { OrderPricingCartItem, PricedOrder } from "@/features/orders/types";
 import { ConflictError, ValidationError } from "@/lib/errors";
 import { prisma } from "@/lib/db";
+import {
+  calculateCouponDiscount,
+  getCouponFailure,
+  normalizeCouponCode,
+} from "@/features/coupons/coupon.utils";
+import { logger } from "@/lib/logger";
 
 const checkoutCartSelect = {
   id: true,
@@ -55,6 +61,8 @@ export interface NewOrderData {
   customerPhone: string;
   shippingAddress: CheckoutAddress;
   customerNote: string | null;
+  couponCode: string | null;
+  couponCustomerKey: string | null;
 }
 
 function ownerWhere(owner: CartOwner) {
@@ -76,6 +84,61 @@ export async function createOrderTransaction(
         if (!cart?.items.length) throw new ValidationError("Your bag is empty.");
 
         const totals = priceCart(cart.items);
+        let couponId: string | null = null;
+        let discountTotal = 0;
+        if (input.couponCode) {
+          const coupon = await tx.coupon.findFirst({
+            where: {
+              code: { equals: normalizeCouponCode(input.couponCode), mode: "insensitive" },
+              deletedAt: null,
+            },
+            select: {
+              id: true,
+              type: true,
+              value: true,
+              minOrderValue: true,
+              maxDiscount: true,
+              usageLimit: true,
+              usedCount: true,
+              perUserLimit: true,
+              startsAt: true,
+              expiresAt: true,
+              isActive: true,
+            },
+          });
+          if (!coupon) {
+            logger.warn("coupon.validation_rejected", { reason: "not_found" });
+            throw new ValidationError("This coupon code cannot be applied to this order.");
+          }
+          if (!input.couponCustomerKey) {
+            logger.warn("coupon.validation_rejected", { reason: "missing_customer_key" });
+            throw new ValidationError("Enter your mobile number before applying this coupon.");
+          }
+          const customerUses = await tx.couponRedemption.count({
+            where: { couponId: coupon.id, customerKey: input.couponCustomerKey },
+          });
+          const failure = getCouponFailure(coupon, totals.subtotal, new Date(), customerUses);
+          if (failure) {
+            logger.warn("coupon.validation_rejected", { reason: failure.reason });
+            throw new ValidationError(failure.message);
+          }
+          discountTotal = calculateCouponDiscount(coupon, totals.subtotal);
+          const incremented = await tx.coupon.updateMany({
+            where: {
+              id: coupon.id,
+              usedCount:
+                coupon.usageLimit === null
+                  ? { equals: coupon.usedCount }
+                  : { equals: coupon.usedCount, lt: coupon.usageLimit },
+            },
+            data: { usedCount: { increment: 1 } },
+          });
+          if (!incremented.count) {
+            logger.warn("coupon.validation_rejected", { reason: "usage_limit_race" });
+            throw new ValidationError("Usage limit reached.");
+          }
+          couponId = coupon.id;
+        }
         const shippingAddress = {
           fullName: input.shippingAddress.fullName,
           phone: input.shippingAddress.phone,
@@ -85,14 +148,24 @@ export async function createOrderTransaction(
           postalCode: input.shippingAddress.postalCode,
           country: input.shippingAddress.country,
         } satisfies Prisma.InputJsonObject;
+        const {
+          couponCode: _couponCode,
+          couponCustomerKey: _couponCustomerKey,
+          ...orderInput
+        } = input;
         const order = await tx.order.create({
           data: {
-            ...input,
+            ...orderInput,
             paymentMethod: "WHATSAPP",
             shippingAddress,
+            couponId,
+            discountTotal,
             subtotal: totals.subtotal,
             shippingTotal: totals.shippingTotal,
-            grandTotal: totals.grandTotal,
+            grandTotal: totals.grandTotal - discountTotal,
+            ...(couponId && input.couponCustomerKey
+              ? { couponRedemption: { create: { couponId, customerKey: input.couponCustomerKey } } }
+              : {}),
             items: { create: totals.items },
             statusHistory: {
               create: {

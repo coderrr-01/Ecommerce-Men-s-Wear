@@ -19,7 +19,9 @@ All catalogue pages are `force-dynamic` because the header reads the session/car
   variant data is part of the listing DTO.
 - Product imagery supports thumbnail selection, mobile swipe and a native image zoom dialog.
   Purchase controls keep the existing server action and include a mobile sticky add-to-bag bar.
-- Product cards expose a quick-view detail link and guest wishlist control. Recently viewed products
+- Product cards expose a quick-view detail link and wishlist control backed by localStorage for
+  guests and the account database for signed-in customers. Approved review ratings appear on cards.
+  Recently viewed products
   are stored in localStorage. Search offers debounced category suggestions and recent terms.
 - The cart drawer renders the signed-in cart snapshot, shipping threshold progress and line items;
   quantity changes/removals remain on the full cart page.
@@ -37,7 +39,7 @@ page (server component)
         -> ProductCard / ProductGrid / Gallery / PurchasePanel
 ```
 
-Repositories filter `deletedAt: null` and `isActive: true` (plus active category and variants where relevant). Services map prices into presentation data and compute rating aggregates.
+Repositories filter `deletedAt: null` and `isActive: true` (plus active category and variants where relevant). Services map prices into presentation data and compute review aggregates from approved reviews only.
 
 ## Admin catalog management
 
@@ -76,6 +78,8 @@ DEFAULTS: 12 items per page, maximum 60. Sorting by price uses `Product.basePric
 ## Product detail
 
 - Loaded by unique slug with images and active variants.
+- Displays approved reviews and their average; Product JSON-LD includes `aggregateRating` only when
+  at least one approved review exists.
 - Variant selection drives price, compare-at price, stock and add-to-cart input.
 - Gallery uses the first image as primary fallback.
 - Metadata is generated from product SEO fields/name/description.
@@ -111,4 +115,4 @@ development database to apply the updated demo catalog.
 - No stock reservation while browsing; stock is checked when adding/updating the cart.
 - Product cards expose one image and no variants, so quick view routes to the detail page instead of selecting options or adding directly to cart.
 - Per-product garment measurements are not part of the detail DTO; the size helper is only a general suggestion, and the guide directs customers to contact support.
-- Guest wishlist and recently viewed items are local to the browser and do not sync with accounts.
+- Guest wishlist entries remain device-local until login, when they merge into the account wishlist.

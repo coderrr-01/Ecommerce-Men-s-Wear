@@ -8,6 +8,7 @@ import { getCustomerOrder } from "@/features/orders/services/customer-order.serv
 import { requireUser } from "@/features/auth/services/session.service";
 import { formatPrice } from "@/lib/utils";
 import { NotFoundError } from "@/lib/errors";
+import { ReturnRequestForm } from "@/features/returns/components/return-request-form";
 
 export const dynamic = "force-dynamic";
 
@@ -81,6 +82,27 @@ export default async function CustomerOrderPage({
                   <p className="mt-1 text-sm text-muted-foreground">
                     SKU {item.sku} · {item.color} / {item.size} · Qty {item.quantity}
                   </p>
+                  {(() => {
+                    const requests = order.returnRequests.filter(
+                      (request) => request.orderItemId === item.id,
+                    );
+                    const latest = requests[0];
+                    const active = requests.some((request) =>
+                      ["REQUESTED", "APPROVED", "RECEIVED"].includes(request.status),
+                    );
+                    return (
+                      <>
+                        {latest ? (
+                          <p className="mt-2 text-xs text-muted-foreground">
+                            Return request: {latest.status.toLowerCase()}
+                          </p>
+                        ) : null}
+                        {order.returnEligible && !active ? (
+                          <ReturnRequestForm orderItemId={item.id} />
+                        ) : null}
+                      </>
+                    );
+                  })()}
                 </div>
                 <p className="shrink-0 text-sm font-semibold">{formatPrice(item.total)}</p>
               </li>

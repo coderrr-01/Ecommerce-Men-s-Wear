@@ -272,7 +272,7 @@ export const siteConfig = {
       eyebrow: "A note from us",
       title: "Good things, occasionally.",
       description: "New arrivals, thoughtful edits and first looks at what is coming next.",
-      disabledLabel: "Newsletter sign-up coming soon",
+      successLabel: "Thanks for joining us. Watch your inbox for occasional updates.",
     },
     editorial: {
       eyebrow: `The ${brandName} standard`,

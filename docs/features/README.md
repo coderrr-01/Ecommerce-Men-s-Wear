@@ -12,6 +12,11 @@ Documents for implemented slices and known gaps.
 - [WhatsApp checkout](whatsapp-checkout.md)
 - [Orders](orders.md)
 - [Invoices](invoices.md)
+- [Wishlist](wishlist.md)
+- [Coupons](coupons.md)
+- [Returns and exchanges](returns.md)
+- [Reviews](reviews.md)
+- [Newsletter and contact](communications.md)
 - [Wishlist, reviews and addresses](account.md)
 - [Home intro preloader](intro-preloader.md)
 

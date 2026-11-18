@@ -12,44 +12,50 @@
 
 ## Enums
 
-| Enum                 | Values                                                                                                |
-| -------------------- | ----------------------------------------------------------------------------------------------------- |
-| `Role`               | `CUSTOMER`, `STAFF`, `ADMIN`                                                                          |
-| `Gender`             | `MEN`                                                                                                 |
-| `OrderStatus`        | `PENDING`, `CONFIRMED`, `PACKED`, `SHIPPED`, `DELIVERED`, `CANCELLED`, `RETURN_REQUESTED`, `RETURNED` |
-| `PaymentStatus`      | `PENDING`, `AUTHORIZED`, `CAPTURED`, `FAILED`, `REFUNDED`, `PARTIALLY_REFUNDED`                       |
-| `PaymentProvider`    | `RAZORPAY`, `COD`, `MOCK`                                                                             |
-| `OrderPaymentMethod` | `WHATSAPP`, `COD`                                                                                     |
-| `AddressType`        | `SHIPPING`, `BILLING`                                                                                 |
-| `CouponType`         | `PERCENTAGE`, `FIXED`                                                                                 |
-| `ReviewStatus`       | `PENDING`, `APPROVED`, `REJECTED`                                                                     |
-| `ProductSizeType`    | `TOPS`, `BOTTOMS`, `FOOTWEAR`, `FREE_SIZE`                                                            |
+| Enum                 | Values                                                                                                                                |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `Role`               | `CUSTOMER`, `STAFF`, `ADMIN`                                                                                                          |
+| `Gender`             | `MEN`                                                                                                                                 |
+| `OrderStatus`        | `PENDING`, `CONFIRMED`, `PACKED`, `SHIPPED`, `DELIVERED`, `CANCELLED`, `RETURN_REQUESTED`, `RETURN_APPROVED`, `RETURNED`, `EXCHANGED` |
+| `PaymentStatus`      | `PENDING`, `AUTHORIZED`, `CAPTURED`, `FAILED`, `REFUNDED`, `PARTIALLY_REFUNDED`                                                       |
+| `PaymentProvider`    | `RAZORPAY`, `COD`, `MOCK`                                                                                                             |
+| `OrderPaymentMethod` | `WHATSAPP`, `COD`                                                                                                                     |
+| `AddressType`        | `SHIPPING`, `BILLING`                                                                                                                 |
+| `CouponType`         | `PERCENTAGE`, `FIXED`                                                                                                                 |
+| `ReviewStatus`       | `PENDING`, `APPROVED`, `REJECTED`                                                                                                     |
+| `ProductSizeType`    | `TOPS`, `BOTTOMS`, `FOOTWEAR`, `FREE_SIZE`                                                                                            |
 
 ## Models
 
-| Model                | Purpose                                  | Notable constraints/indexes                                                                          |
-| -------------------- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `User`               | Customers and staff                      | unique `email`; `role`; `isActive`; `deletedAt`                                                      |
-| `Address`            | Saved shipping/billing addresses         | indexed `userId`; soft delete                                                                        |
-| `Category`           | Menswear taxonomy, self-referencing tree | unique `slug`; `parentId`                                                                            |
-| `Product`            | Catalogue product                        | unique `slug`; category; paise `basePrice`; status/featured/new-arrival flags; size set; soft delete |
-| `ProductVariant`     | Size/colour SKU                          | unique `sku`; integer `price`, optional `compareAtPrice`, `stock`; soft delete                       |
-| `ProductImage`       | Product gallery                          | `sortOrder`, `isPrimary`, Cloudinary `publicId`, soft delete                                         |
-| `StockMovement`      | Auditable inventory adjustment           | `variantId`, signed `delta`, reason, acting `userId`, indexed creation time                          |
-| `Cart`               | One cart per user or guest session       | unique nullable `userId`, unique nullable `sessionId`                                                |
-| `CartItem`           | Variant and quantity                     | unique `(cartId, variantId)`                                                                         |
-| `Order`              | Immutable order header and totals        | unique order number/token/idempotency key; customer phone/status indexes; address JSON               |
-| `OrderItem`          | Product snapshot at purchase time        | stores name, slug, SKU, size, colour, price, image                                                   |
-| `OrderStatusHistory` | Append-only order lifecycle events       | order, previous/next status, optional actor and customer-visible note                                |
-| `OrderInternalNote`  | Staff-only order notes                   | order, author, note and creation time; excluded from customer reads                                  |
-| `InvoiceSequence`    | Annual invoice counter                   | year primary key and transactional next-value counter                                                |
-| `Payment`            | Payment attempts per order               | provider/status, provider IDs, raw response                                                          |
-| `Coupon`             | Discount rules                           | unique `code`; percentage or fixed value; windows and usage limits                                   |
-| `Wishlist`           | User/product pairs                       | unique `(userId, productId)`                                                                         |
-| `Review`             | Ratings and moderation                   | one review per user/product; status default `PENDING`                                                |
-| `Banner`             | Home/merchandising placements            | placement, schedule, sort order, soft delete                                                         |
-| `SizeGuide`          | JSON size tables                         | unique `slug`; optional category                                                                     |
-| `StoreSettings`      | Singleton operational settings           | `id` defaults to `"default"`; tax bps, shipping fees, COGS flags                                     |
+| Model                    | Purpose                                  | Notable constraints/indexes                                                                          |
+| ------------------------ | ---------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `User`                   | Customers and staff                      | unique `email`; `role`; `isActive`; `deletedAt`                                                      |
+| `Address`                | Saved shipping/billing addresses         | indexed `userId`; soft delete                                                                        |
+| `Category`               | Menswear taxonomy, self-referencing tree | unique `slug`; `parentId`                                                                            |
+| `Product`                | Catalogue product                        | unique `slug`; category; paise `basePrice`; status/featured/new-arrival flags; size set; soft delete |
+| `ProductVariant`         | Size/colour SKU                          | unique `sku`; integer `price`, optional `compareAtPrice`, `stock`; soft delete                       |
+| `ProductImage`           | Product gallery                          | `sortOrder`, `isPrimary`, Cloudinary `publicId`, soft delete                                         |
+| `StockMovement`          | Auditable inventory adjustment           | `variantId`, signed `delta`, reason, acting `userId`, indexed creation time                          |
+| `Cart`                   | One cart per user or guest session       | unique nullable `userId`, unique nullable `sessionId`                                                |
+| `CartItem`               | Variant and quantity                     | unique `(cartId, variantId)`                                                                         |
+| `Order`                  | Immutable order header and totals        | unique order number/token/idempotency key; customer phone/status indexes; address JSON               |
+| `OrderItem`              | Product snapshot at purchase time        | stores name, slug, SKU, size, colour, price, image                                                   |
+| `OrderStatusHistory`     | Append-only order lifecycle events       | order, previous/next status, optional actor and customer-visible note                                |
+| `OrderInternalNote`      | Staff-only order notes                   | order, author, note and creation time; excluded from customer reads                                  |
+| `InvoiceSequence`        | Annual invoice counter                   | year primary key and transactional next-value counter                                                |
+| `Payment`                | Payment attempts per order               | provider/status, provider IDs, raw response                                                          |
+| `Coupon`                 | Discount rules                           | unique `code`; percentage or fixed value; windows and usage limits                                   |
+| `CouponRedemption`       | Per-order coupon usage                   | unique order; indexed coupon/customer hash; created with order in serializable transaction           |
+| `Wishlist`               | User/product pairs                       | unique `(userId, productId)`                                                                         |
+| `Review`                 | Ratings and moderation                   | one review per user/product; status default `PENDING`                                                |
+| `ReviewPhoto`            | Storage-provider review images           | review and creation-time index                                                                       |
+| `ReturnRequest`          | Customer return/exchange workflow        | owner, order item, active-key uniqueness, status and received time                                   |
+| `ReturnRequestPhoto`     | Storage-provider return images           | return request and creation-time index                                                               |
+| `NewsletterSubscription` | Newsletter records                       | unique normalized email and optional unique user                                                     |
+| `ContactMessage`         | Plain-text contact submissions           | optional user, bounded fields and creation-time index                                                |
+| `Banner`                 | Home/merchandising placements            | placement, schedule, sort order, soft delete                                                         |
+| `SizeGuide`              | JSON size tables                         | unique `slug`; optional category                                                                     |
+| `StoreSettings`          | Singleton operational settings           | `id` defaults to `"default"`; tax bps, shipping fees, COGS flags                                     |
 
 See `prisma/schema.prisma` for the authoritative definition.
 
@@ -57,9 +63,11 @@ See `prisma/schema.prisma` for the authoritative definition.
 
 Committed migrations:
 
-- `prisma/migrations/20261113000000_init/migration.sql`
+- `prisma/migrations/20261113064020_init/migration.sql`
 - `prisma/migrations/20261113114155_admin_catalog_stock_movements/migration.sql`
 - `prisma/migrations/20261117063053_whatsapp_checkout/migration.sql`
+- `prisma/migrations/20261117105952_phase5_order_experience/migration.sql`
+- `prisma/migrations/20261117122300_phase5_part_b/migration.sql`
 
 The admin migration adds `ProductSizeType`, product fields used by the catalog editor, and the
 `stock_movements` table. It was generated with Prisma and applied to the configured PostgreSQL
@@ -93,14 +101,16 @@ Do not hand-write migration SQL or use `db push`. Existing orders remain valid b
 identifiers/snapshots are nullable for legacy rows and the payment-method field has no default.
 Commit the generated migration with the schema and application changes.
 
-Phase 5 Part A adds only nullable order tracking/invoice fields and new history, internal-note and
-invoice-sequence tables. Generate the migration from `prisma/schema.prisma` with
-`pnpm prisma migrate dev --name phase5_order_experience`; do not hand-write SQL or use `db push`.
-Invoice assignment increments the yearly counter and writes the unique invoice number in one
-serializable transaction. A failed/retried allocation rolls back its counter change.
-This migration has not yet been generated: the current command environment is non-interactive and
-Prisma refused `migrate dev`. Run the command in an interactive development terminal and review the
-generated additive migration before applying it.
+Phase 5 Part A adds nullable order tracking/invoice fields and new history, internal-note and
+invoice-sequence tables. The migration was generated by Prisma and applied to the configured
+development database. Invoice assignment increments the yearly counter and writes the unique
+invoice number in one serializable transaction.
+
+Phase 5 Part B migration `20261117122300_phase5_part_b` was generated with `prisma migrate dev`
+and applied locally. It adds review photos, returns/exchanges, coupon redemption records, newsletter
+subscriptions, contact messages and the additive order-status enum values. It does not drop or
+rename existing columns. Production deploys the reviewed migration with `pnpm prisma migrate deploy`;
+never hand-write migration SQL or use `db push`.
 
 ## Seed
 
@@ -129,6 +139,15 @@ Order creation and each permitted status transition also append an `OrderStatusH
 same transaction. Staff-only notes are stored separately and omitted from customer/guest query
 selections. Older orders may have no history rows; their current state is shown without inventing
 timestamps for earlier transitions.
+
+Coupon order creation recomputes active product/variant prices inside the serializable order
+transaction. It checks coupon dates, minimum subtotal, global usage and a hashed customer key,
+conditionally increments `Coupon.usedCount`, creates `CouponRedemption`, and stores the discount
+before clearing the cart. Any failure rolls all coupon/order writes back.
+
+Return stock is restored only when staff marks an approved item received. Request status compare,
+variant stock increment and positive `StockMovement` share a transaction; later completion as
+returned/exchanged does not increment stock again.
 
 The cart availability rule lives in `src/features/inventory/services/stock.ts`. Admin inventory
 adjustments validate non-negative integer targets, update variants and insert a signed

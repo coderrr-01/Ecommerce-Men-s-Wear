@@ -4,13 +4,17 @@ import { ProductGrid } from "@/features/catalog/components/product-grid";
 import type { ProductCardData, ProductDetailData } from "@/features/catalog/types";
 import { siteConfig } from "@/config/site.config";
 import { formatPrice } from "@/lib/utils";
+import Image from "next/image";
+import { ReviewForm } from "@/features/reviews/components/review-form";
+import type { ReviewSubmissionState } from "@/features/reviews/services/review.service";
 
 interface ProductStoryProps {
   product: ProductDetailData;
   related: ProductCardData[];
+  reviewState: ReviewSubmissionState;
 }
 
-export function ProductStory({ product, related }: ProductStoryProps) {
+export function ProductStory({ product, related, reviewState }: ProductStoryProps) {
   return (
     <>
       <section className="mt-14 border-t border-border">
@@ -99,6 +103,20 @@ export function ProductStory({ product, related }: ProductStoryProps) {
                 {review.comment ? (
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">{review.comment}</p>
                 ) : null}
+                {review.photos.length ? (
+                  <div className="mt-3 flex gap-2">
+                    {review.photos.map((url) => (
+                      <Image
+                        key={url}
+                        src={url}
+                        alt="Customer review photo"
+                        width={80}
+                        height={80}
+                        className="size-20 rounded object-cover"
+                      />
+                    ))}
+                  </div>
+                ) : null}
                 <p className="mt-4 text-xs text-muted-foreground">
                   {review.author} ·{" "}
                   {review.createdAt.toLocaleDateString(siteConfig.locale, {
@@ -111,6 +129,33 @@ export function ProductStory({ product, related }: ProductStoryProps) {
             ))}
           </div>
         )}
+        {reviewState === "ELIGIBLE" ? <ReviewForm productId={product.id} /> : null}
+        {reviewState === "SIGN_IN" ? (
+          <p className="mt-4 text-sm text-muted-foreground">
+            <Link
+              href={`/login?redirectTo=${encodeURIComponent(`/products/${product.slug}`)}`}
+              className="underline"
+            >
+              Log in to review
+            </Link>{" "}
+            after a delivered purchase.
+          </p>
+        ) : null}
+        {reviewState === "NOT_ELIGIBLE" ? (
+          <p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground">
+            Only customers who received this product can review it. Reviews can only be linked to
+            orders placed while signed in; guest orders cannot currently be claimed.
+          </p>
+        ) : null}
+        {reviewState === "PENDING" ? (
+          <p className="mt-4 text-sm text-muted-foreground">Your review is awaiting approval.</p>
+        ) : null}
+        {reviewState === "APPROVED" ? (
+          <p className="mt-4 text-sm text-muted-foreground">Your review is published.</p>
+        ) : null}
+        {reviewState === "REJECTED" ? (
+          <p className="mt-4 text-sm text-muted-foreground">Your review was not published.</p>
+        ) : null}
       </section>
 
       {related.length > 0 ? (
